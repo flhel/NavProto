@@ -41,9 +41,9 @@ public class MyLocationProvider implements IMyLocationProvider {
         myLocationProvider = this;
 
         //For Activation of different localisation Methods
-        listenNetworkEnabled = false;
-        listenGpsEnabled = false;
-        listenWifiRttEnabled = true;
+        listenNetworkEnabled = true;
+        listenGpsEnabled = true;
+        listenWifiRttEnabled = false;
     }
 
     /** Check if we can get our location */
@@ -170,7 +170,8 @@ public class MyLocationProvider implements IMyLocationProvider {
             };
 
             wifiNetworkAdapter.setWifiNetworks();
-            myWifiRttManager.requestLocationUpdates(wifiNetworkAdapter.getWifiNetworks());
+            Log.d(TAG,"Networks:" + wifiNetworkAdapter.getWifiNetworks());
+            //myWifiRttManager.requestLocationUpdates(wifiNetworkAdapter.getWifiNetworks());
             //locationManager.requestLocationUpdates(locationProviderWifiRtt, 0, 0, locationListenerWifiRtt);
             return true;
 

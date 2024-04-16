@@ -20,6 +20,10 @@ public class Permissions {
                 || permissionCheck1 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context, permissions, 12);
         }
+        // Force the user to give the permission or the app wont function
+        if(!hasPermissions(context)){
+            askPermissions(context);
+        }
     }
 
     public static boolean hasPermissions(Context context) {
