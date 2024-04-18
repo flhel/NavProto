@@ -25,7 +25,7 @@ public class Trilateration {
             //Calculation between 3 Points has to be enough, probably wont even get 3 APs to test the Algorithm
 
             Log.d(TAG,"Finally doing the magic!!!");
-
+            //TODO match the Locations of the Aps with the SSIDs
             LatLng position = calculatePosition(ap1Location, ap2Location, ap3Location,
                     results.get(0).getDistanceMm(),
                     results.get(1).getDistanceMm(),

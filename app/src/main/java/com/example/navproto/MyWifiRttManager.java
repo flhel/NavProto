@@ -48,6 +48,7 @@ public class MyWifiRttManager {
 
     @SuppressLint("MissingPermission")
     public void requestLocationUpdates(List<ScanResult> scanResults, MyLocationListener myLocationListener){
+        //Check if everything is there
         if(wifiRttManager == null){
             Log.d(TAG,"No Wifi RTT = No wifiRttManager");
             return;
@@ -61,6 +62,7 @@ public class MyWifiRttManager {
             Log.d(TAG,"No RangingRequest");
             return;
         }
+
         final RangingResultCallback callback = new RangingResultCallback() {
             @Override
             public void onRangingFailure(int code) {
