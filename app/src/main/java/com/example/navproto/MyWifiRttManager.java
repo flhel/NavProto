@@ -1,7 +1,6 @@
 package com.example.navproto;
 
 import static android.content.ContentValues.TAG;
-import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -9,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.net.wifi.rtt.RangingRequest;
 import android.net.wifi.rtt.RangingResult;
 import android.net.wifi.rtt.RangingResultCallback;
@@ -49,23 +47,31 @@ public class MyWifiRttManager {
     }
 
     @SuppressLint("MissingPermission")
-    public void requestLocationUpdates(List<ScanResult> scanResults){
-
-        RangingRequest request = new RangingRequest.Builder()
-                .addAccessPoints(scanResults)
-                .build();
-
-        wifiRttManager.startRanging(request, mainExecutor, new RangingResultCallback() {
-
+    public void requestLocationUpdates(List<ScanResult> scanResults, MyLocationListener myLocationListener){
+        if(scanResults == null){
+            Log.d(TAG,"No Wifis");
+            return;
+        }
+        RangingRequest request = new RangingRequest.Builder().addAccessPoints(scanResults).build();
+        if(request == null){
+            Log.d(TAG,"No RangingRequest");
+            return;
+        }
+        final RangingResultCallback callback = new RangingResultCallback() {
             @Override
             public void onRangingFailure(int code) {
                 Log.d(TAG,"WiFi-Ranging failed: " + code);
             }
-
             @Override
             public void onRangingResults(List<RangingResult> results) {
                 Log.d(TAG,"WiFi-Ranging success: " + results);
+                if (myLocationListener != null) {
+                    myLocationListener.onLocationChanged(new FindPosition().findPosition(results));
+                }
             }
-        });
+        };
+
+        Log.d(TAG,"WiFi-Ranging...");
+        wifiRttManager.startRanging(request, mainExecutor, callback);
     }
 }
