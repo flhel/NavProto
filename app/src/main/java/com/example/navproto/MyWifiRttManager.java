@@ -48,6 +48,10 @@ public class MyWifiRttManager {
 
     @SuppressLint("MissingPermission")
     public void requestLocationUpdates(List<ScanResult> scanResults, MyLocationListener myLocationListener){
+        if(wifiRttManager == null){
+            Log.d(TAG,"No Wifi RTT = No wifiRttManager");
+            return;
+        }
         if(scanResults == null){
             Log.d(TAG,"No Wifis");
             return;
@@ -66,12 +70,12 @@ public class MyWifiRttManager {
             public void onRangingResults(List<RangingResult> results) {
                 Log.d(TAG,"WiFi-Ranging success: " + results);
                 if (myLocationListener != null) {
-                    myLocationListener.onLocationChanged(new FindPosition().findPosition(results));
+                    myLocationListener.onLocationChanged(new Trilateration().findPosition(results));
                 }
             }
         };
 
-        Log.d(TAG,"WiFi-Ranging...");
+        Log.d(TAG,"startRanging...");
         wifiRttManager.startRanging(request, mainExecutor, callback);
     }
 }

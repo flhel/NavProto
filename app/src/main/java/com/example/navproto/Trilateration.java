@@ -11,7 +11,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
-public class FindPosition {
+public class Trilateration {
     //Theoretical Position of the Wifi Access Points
     private final LatLng ap1Location = new LatLng(0.1111, 0.1111);
     private final LatLng ap2Location = new LatLng(0.2222, 0.2222);
@@ -23,6 +23,9 @@ public class FindPosition {
             return null;
         } else {
             //Calculation between 3 Points has to be enough, probably wont even get 3 APs to test the Algorithm
+
+            Log.d(TAG,"Finally doing the magic!!!");
+
             LatLng position = calculatePosition(ap1Location, ap2Location, ap3Location,
                     results.get(0).getDistanceMm(),
                     results.get(1).getDistanceMm(),
