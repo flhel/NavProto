@@ -52,7 +52,7 @@ public class MyWifiRttManager {
 
         //Check if everything is there
         if(wifiRttManager == null){
-            //Test Code
+            //Test Code if Hardware is missing the Capabilities
             boolean forTesting = true;
             if(forTesting){
                 myLocationListener.onLocationChanged(new Trilateration().findPosition(new ArrayList<RangingResult>()));

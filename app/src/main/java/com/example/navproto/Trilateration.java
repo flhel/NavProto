@@ -14,15 +14,17 @@ import java.util.List;
 
 public class Trilateration {
     //Theoretical Position of the Wifi Access Points
-    private LatLng ap1Location = new LatLng(50.9408534, 7.0203974);
-    private LatLng ap2Location = new LatLng(50.9408454, 7.0203991);
-    private LatLng ap3Location = new LatLng(50.9409512, 7.0203565);
+
+    // 50.928162, 6.928819
+    private LatLng ap1Location = new LatLng(50.928393, 6.928548);
+    private LatLng ap2Location = new LatLng(50.927977, 6.928806);
+    private LatLng ap3Location = new LatLng(50.928282, 6.929071);
 
 
     //Theoretical Distance to the Wifi Access Points
-    private int ap1DistanceInMm = 3000;
-    private int ap2DistanceInMm = 3000;
-    private int ap3DistanceInMm = 3000;
+    private int ap1DistanceInMm = 15000;
+    private int ap2DistanceInMm = 15000;
+    private int ap3DistanceInMm = 15000;
 
     public Location findPosition(List<RangingResult> results){
 
@@ -33,6 +35,7 @@ public class Trilateration {
         }
 
         if(!apPositionsHardcoded){
+            // Look for WifiRtt capable APs in Ranging Results
             List<RangingResult> myAps = new ArrayList<RangingResult>();
             for(RangingResult res : results){
                 if(res.is80211mcMeasurement()){
@@ -44,6 +47,7 @@ public class Trilateration {
                 Log.d(TAG,"Not enough Reference Points for positioning!");
                 Log.d(TAG,"Fallback to Hardcoded Points for Testing!");
             } else {
+                //Set the Locations and Distances for the Algorithm
                 Location loc1 = myAps.get(0).getUnverifiedResponderLocation().toLocation();
                 Location loc2 = myAps.get(1).getUnverifiedResponderLocation().toLocation();
                 Location loc3 = myAps.get(2).getUnverifiedResponderLocation().toLocation();
@@ -56,11 +60,11 @@ public class Trilateration {
             }
         }
 
-        //Calculation between 3 Points has to be enough, probably wont even get 3 APs to test the Algorithm
+        //Calculation between 3 Points has to be enough, probably wont even get 3 APs to test the Algorithm properly
         LatLng position = calculatePosition(ap1Location, ap2Location, ap3Location,
                 ap1DistanceInMm, ap2DistanceInMm, ap3DistanceInMm);
 
-        // Make a Location Object out of the result
+        // Make a Location Object out of the Result
         Location location = new Location(LocationManager.GPS_PROVIDER);
         location.setLatitude(position.latitude);
         location.setLongitude(position.longitude);
