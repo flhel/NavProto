@@ -14,6 +14,7 @@ import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -48,20 +49,21 @@ public class MyWifiRttManager {
 
     @SuppressLint("MissingPermission")
     public void requestLocationUpdates(List<ScanResult> scanResults, MyLocationListener myLocationListener){
+
         //Check if everything is there
         if(wifiRttManager == null){
-            Log.d(TAG,"No Wifi RTT = No wifiRttManager");
+            //Test Code
+            boolean forTesting = true;
+            if(forTesting){
+                myLocationListener.onLocationChanged(new Trilateration().findPosition(new ArrayList<RangingResult>()));
+            }
             return;
         }
         if(scanResults == null){
-            Log.d(TAG,"No Wifis");
             return;
         }
+
         RangingRequest request = new RangingRequest.Builder().addAccessPoints(scanResults).build();
-        if(request == null){
-            Log.d(TAG,"No RangingRequest");
-            return;
-        }
 
         final RangingResultCallback callback = new RangingResultCallback() {
             @Override

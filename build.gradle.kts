@@ -2,3 +2,4 @@
 plugins {
     id("com.android.application") version "8.3.1" apply false
 }
+val defaultMinSdkVersion by extra(32)

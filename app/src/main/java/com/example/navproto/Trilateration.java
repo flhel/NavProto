@@ -9,34 +9,62 @@ import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Trilateration {
     //Theoretical Position of the Wifi Access Points
-    private final LatLng ap1Location = new LatLng(0.1111, 0.1111);
-    private final LatLng ap2Location = new LatLng(0.2222, 0.2222);
-    private final LatLng ap3Location = new LatLng(0.3333, 0.3333);
+    private LatLng ap1Location = new LatLng(50.9408534, 7.0203974);
+    private LatLng ap2Location = new LatLng(50.9408454, 7.0203991);
+    private LatLng ap3Location = new LatLng(50.9409512, 7.0203565);
+
+
+    //Theoretical Distance to the Wifi Access Points
+    private int ap1DistanceInMm = 3000;
+    private int ap2DistanceInMm = 3000;
+    private int ap3DistanceInMm = 3000;
 
     public Location findPosition(List<RangingResult> results){
-        if(results.size() < 3){
-            Log.d(TAG,"Not enough Reference Points for positioning!");
-            return null;
-        } else {
-            //Calculation between 3 Points has to be enough, probably wont even get 3 APs to test the Algorithm
 
-            Log.d(TAG,"Finally doing the magic!!!");
-            //TODO match the Locations of the Aps with the SSIDs
-            LatLng position = calculatePosition(ap1Location, ap2Location, ap3Location,
-                    results.get(0).getDistanceMm(),
-                    results.get(1).getDistanceMm(),
-                    results.get(2).getDistanceMm());
-
-            // Make a Location Object out of the result
-            Location location = new Location(LocationManager.GPS_PROVIDER);
-            location.setLatitude(position.latitude);
-            location.setLongitude(position.longitude);
-            return location;
+        //Flag for Testing etc.
+        boolean apPositionsHardcoded = false;
+        if(results.isEmpty()){
+            apPositionsHardcoded = true;
         }
+
+        if(!apPositionsHardcoded){
+            List<RangingResult> myAps = new ArrayList<RangingResult>();
+            for(RangingResult res : results){
+                if(res.is80211mcMeasurement()){
+                    myAps.add(res);
+                }
+            }
+
+            if(myAps.size() < 3){
+                Log.d(TAG,"Not enough Reference Points for positioning!");
+                Log.d(TAG,"Fallback to Hardcoded Points for Testing!");
+            } else {
+                Location loc1 = myAps.get(0).getUnverifiedResponderLocation().toLocation();
+                Location loc2 = myAps.get(1).getUnverifiedResponderLocation().toLocation();
+                Location loc3 = myAps.get(2).getUnverifiedResponderLocation().toLocation();
+                ap1Location = new LatLng(loc1.getLatitude(), loc1.getLongitude());
+                ap2Location = new LatLng(loc2.getLatitude(), loc2.getLongitude());
+                ap3Location = new LatLng(loc3.getLatitude(), loc3.getLongitude());
+                ap1DistanceInMm = myAps.get(0).getDistanceMm();
+                ap2DistanceInMm = myAps.get(1).getDistanceMm();
+                ap3DistanceInMm = myAps.get(2).getDistanceMm();
+            }
+        }
+
+        //Calculation between 3 Points has to be enough, probably wont even get 3 APs to test the Algorithm
+        LatLng position = calculatePosition(ap1Location, ap2Location, ap3Location,
+                ap1DistanceInMm, ap2DistanceInMm, ap3DistanceInMm);
+
+        // Make a Location Object out of the result
+        Location location = new Location(LocationManager.GPS_PROVIDER);
+        location.setLatitude(position.latitude);
+        location.setLongitude(position.longitude);
+        return location;
     }
 
     //Calculation of an unknown Position by 3 know Points and the corresponding Distances in LatLng

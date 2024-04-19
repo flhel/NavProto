@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.navproto"
-        minSdk = 29
+        minSdkVersion(rootProject.extra["defaultMinSdkVersion"] as Int)
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
