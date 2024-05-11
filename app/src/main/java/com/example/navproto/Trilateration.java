@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Trilateration {
+    private static final String TAG = "Trilateration";
+
     //Theoretical Position of the Wifi Access Points
 
     // 50.928162, 6.928819

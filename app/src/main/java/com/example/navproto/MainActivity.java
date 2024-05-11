@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final String TAG = "MainActivity";
     private ActivityMainBinding binding;
     private Context context;
 
@@ -38,26 +38,40 @@ public class MainActivity extends AppCompatActivity {
 
         wifiNetworkAdapter = new WifiNetworkAdapter(this);
 
+
         binding.scanWifis.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                wifiNetworkAdapter.setWifiNetworks();
-                ArrayList<ScanResult> wifis = (ArrayList) wifiNetworkAdapter.getWifiNetworks();
+                // Test Ping (Not usable to measure distance due to execution time)
+                //new NetworkPingTask().execute("192.168.178.1");
+                //new NetworkPingTask().execute("192.168.178.25");
 
+                // 1. Get APs from connected Network
+                ArrayList<ScanResult> wifis = (ArrayList) wifiNetworkAdapter.getNetworkAccessPoints();
 
+                new Multilateration().test();
 
-                ArrayList<String> output = new ArrayList<String>();
-                for (ScanResult res : wifis) {
-                    String hasWifiRttStr= "No";
-                    if(res.is80211mcResponder()){
-                        hasWifiRttStr = "Yes";
+                // 2. Get Networks
+                //wifiNetworkAdapter.setWifiNetworks();
+                //ArrayList<ScanResult> wifis = (ArrayList) wifiNetworkAdapter.getWifiNetworks();
+
+                if(wifis != null){
+                    ArrayList<String> output = new ArrayList<String>();
+                    output.add("Network: " + wifis.get(0).SSID);
+                    output.add("Access Points: ");
+                    for (ScanResult res : wifis) {
+
+                        String hasWifiRttStr= "No";
+                        if(res.is80211mcResponder()){
+                            hasWifiRttStr = "Yes";
+                        }
+                        //Log.d(TAG, res.SSID + hasWifiRttStr);
+                        output.add(res.BSSID + " | Has Wifi RTT: " + hasWifiRttStr);
                     }
-                    Log.d(TAG, res.SSID + hasWifiRttStr);
-                    output.add(res.SSID + " | Has Wifi RTT: " + hasWifiRttStr);
-                }
 
-                ArrayAdapter arrayAdapter = new ArrayAdapter(context, android.R.layout.simple_list_item_1, output);
-                binding.wifiNetworkList.setAdapter(arrayAdapter);
+                    ArrayAdapter arrayAdapter = new ArrayAdapter(context, android.R.layout.simple_list_item_1, output);
+                    binding.wifiNetworkList.setAdapter(arrayAdapter);
+                }
             }
         });
 

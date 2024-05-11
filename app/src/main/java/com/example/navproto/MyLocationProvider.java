@@ -83,8 +83,11 @@ public class MyLocationProvider implements IMyLocationProvider {
         if(listenForWifiRttLocation() || listenForNetworkLocation()){
             return true;
         }
+         if(listenForWifiRttLocation()){
+            return true;
+        }
         */
-        if(listenForWifiRttLocation()){
+        if(listenForNetworkLocation()){
             return true;
         }
 

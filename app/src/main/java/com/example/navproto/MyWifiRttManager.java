@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 public class MyWifiRttManager {
-
+    private static final String TAG = "MyWifiRttManager";
     Context context;
     WifiRttManager wifiRttManager;
     Executor mainExecutor;
