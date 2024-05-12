@@ -52,7 +52,6 @@ public class SphereIntersection {
         if (intersection != null) {
             return intersection;
         } else {
-            Log.d(TAG, "No intersection between the spheres.");
             return null;
         }
     }

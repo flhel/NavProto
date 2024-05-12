@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 // 1. Get APs from connected Network
                 ArrayList<ScanResult> wifis = (ArrayList) wifiNetworkAdapter.getNetworkAccessPoints();
 
-                new Multilateration().test();
+                new Multilateration().multilateration();
 
                 // 2. Get Networks
                 //wifiNetworkAdapter.setWifiNetworks();
