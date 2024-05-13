@@ -7,14 +7,6 @@ public class PlaneSphereIntersection {
         Vector3D planeNormal = plane.normal;
         double d = plane.equationD;
 
-        System.out.println("Plane Normal " + plane.normal.toString());
-        System.out.println("Plane X " + plane.equationX);
-        System.out.println("Plane Y " + plane.equationY);
-        System.out.println("Plane Z " + plane.equationZ);
-        System.out.println("Plane D " + plane.equationD);
-        System.out.println("sphere.center " + sphere.center.toString());
-        System.out.println("sphere.radius " + sphere.radius);
-
         Point3D sphereCenter= sphere.center;
         double sphereRadius = sphere.radius;
 
@@ -22,7 +14,6 @@ public class PlaneSphereIntersection {
         double distance = Math.abs(planeNormal.x * sphereCenter.x + planeNormal.y * sphereCenter.y + planeNormal.z * sphereCenter.z + d)
                 / Math.sqrt(planeNormal.x * planeNormal.x + planeNormal.y * planeNormal.y + planeNormal.z * planeNormal.z);
 
-        System.out.println("Distance Plane to Sphere: " + distance);
         // If the distance is greater than the sphere radius, there is no intersection
         if (distance > sphereRadius) {
             return null;
