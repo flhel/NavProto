@@ -1,9 +1,9 @@
 package com.example.navproto.multilateration;
 
-import static com.example.navproto.multilateration.CircleIntersection.circleIntersection;
-import static com.example.navproto.multilateration.PlaneSphereIntersection.planeSphereIntersection;
-import static com.example.navproto.multilateration.PointOnSphereCheck.pointOnSphereCheck;
-import static com.example.navproto.multilateration.SphereIntersection.calculateSphereIntersection;
+import static com.example.navproto.multilateration.GeometricCalculations3D.circleIntersection;
+import static com.example.navproto.multilateration.GeometricCalculations3D.planeSphereIntersection;
+import static com.example.navproto.multilateration.GeometricCalculations3D.pointOnSphereCheck;
+import static com.example.navproto.multilateration.GeometricCalculations3D.sphereIntersection;
 
 import android.location.Location;
 import android.location.LocationManager;
@@ -187,7 +187,7 @@ public class Multilateration {
 
     public Point3D calculateLocation(Sphere[] spheres) {
 
-        Circle3D circle1 = calculateSphereIntersection(spheres[0],spheres[1]);
+        Circle3D circle1 = sphereIntersection(spheres[0],spheres[1]);
         if(circle1 == null){
             Log.d(TAG, "Spheres don't intersect in a circle" );
             return null;
