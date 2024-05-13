@@ -2,7 +2,7 @@ package com.example.navproto.multilateration;
 
 public class PlaneSphereIntersection {
 
-    public static Circle planeSphereIntersection(Plane plane, Sphere sphere) {
+    public static Circle3D planeSphereIntersection(Plane plane, Sphere sphere) {
 
         Vector3D planeNormal = plane.normal;
         double d = plane.equationD;
@@ -25,12 +25,12 @@ public class PlaneSphereIntersection {
 
         // Single Point intersection
         if (distance == sphereRadius) {
-            return new Circle(center, 0, planeNormal);
+            return new Circle3D(center, 0, planeNormal);
         }
 
         // Circular intersection
         double radius = Math.sqrt(sphereRadius * sphereRadius - distance * distance);
-        return new Circle(center, radius, planeNormal);
+        return new Circle3D(center, radius, planeNormal);
     }
 
     public static void testPlaneSphere() {
@@ -47,7 +47,7 @@ public class PlaneSphereIntersection {
         Sphere sphere = new Sphere(sphereCenter, sphereRadius);
 
         // Find the intersection circle
-        Circle intersectionCircle = planeSphereIntersection(plane, sphere);
+        Circle3D intersectionCircle = planeSphereIntersection(plane, sphere);
 
         if (intersectionCircle != null) {
             System.out.println("Intersection Circle Center: (" +

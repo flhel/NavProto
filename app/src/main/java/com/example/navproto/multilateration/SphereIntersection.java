@@ -7,7 +7,7 @@ public class SphereIntersection {
     private static final String TAG = "SphereIntersection";
 
     // Function to find intersection circle between two spheres
-    public static Circle calculateCircle(Point3D center1, double radius1, Point3D center2, double radius2) {
+    public static Circle3D calculateCircle(Point3D center1, double radius1, Point3D center2, double radius2) {
         // Calculate the distance between centers
         double distance = center1.distance(center2);
 
@@ -43,12 +43,12 @@ public class SphereIntersection {
             Vector3D normal = new Vector3D(nx, ny, nz);
 
             // Return the intersection circle
-            return new Circle(center, radius, normal);
+            return new Circle3D(center, radius, normal);
         }
     }
 
-    public static Circle calculateSphereIntersection(Sphere sphere1, Sphere sphere2) {
-        Circle intersection = calculateCircle(sphere1.center, sphere1.radius, sphere2.center, sphere2.radius);
+    public static Circle3D calculateSphereIntersection(Sphere sphere1, Sphere sphere2) {
+        Circle3D intersection = calculateCircle(sphere1.center, sphere1.radius, sphere2.center, sphere2.radius);
         if (intersection != null) {
             return intersection;
         } else {

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
+import android.net.wifi.rtt.RangingResult;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -46,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
                 // 1. Get APs from connected Network
                 ArrayList<ScanResult> wifis = (ArrayList) wifiNetworkAdapter.getNetworkAccessPoints();
 
-                new Multilateration().multilateration();
+                //Test
+                new Multilateration().findPosition(new ArrayList<RangingResult>());
 
                 // 2. Get Networks
                 //wifiNetworkAdapter.setWifiNetworks();

@@ -14,6 +14,8 @@ import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
 import android.util.Log;
 
+import com.example.navproto.multilateration.Multilateration;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -55,7 +57,10 @@ public class MyWifiRttManager {
             //Test Code if Hardware is missing the Capabilities
             boolean forTesting = true;
             if(forTesting){
-                myLocationListener.onLocationChanged(new Trilateration().findPosition(new ArrayList<RangingResult>()));
+                myLocationListener.onLocationChanged(
+                        new Trilateration().findPosition(new ArrayList<RangingResult>()
+                        //new Multilateration().findPosition(new ArrayList<RangingResult>())
+                        ));
             }
             return;
         }

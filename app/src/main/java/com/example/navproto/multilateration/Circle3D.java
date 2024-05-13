@@ -1,9 +1,9 @@
 package com.example.navproto.multilateration;
 
-public class Circle extends Plane{
+public class Circle3D extends Plane{
     double radius;
 
-    public Circle(Point3D center, double radius, Vector3D normal) {
+    public Circle3D(Point3D center, double radius, Vector3D normal) {
         super(center, normal);
         this.radius = radius;
     }

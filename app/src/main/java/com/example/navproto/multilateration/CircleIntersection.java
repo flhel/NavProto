@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class CircleIntersection {
 
-    public static ArrayList<Point3D> circleIntersection(Circle circle1, Circle circle2) {
+    public static ArrayList<Point3D> circleIntersection(Circle3D circle1, Circle3D circle2) {
 
         // Calculate the line of intersection between the planes of the circles
         Vector3D lineDirection = circle1.normal.cross(circle2.normal);

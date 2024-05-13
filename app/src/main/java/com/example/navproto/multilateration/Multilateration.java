@@ -42,9 +42,9 @@ public class Multilateration {
     // Stores all possible combinations of the 4 Spheres
     ArrayList<Sphere[]> allCombinations;
 
-    public Location multilateration(ArrayList<RangingResult> results) {
+    public Location findPosition(ArrayList<RangingResult> results) {
 
-        List<RangingResult> myAps = new ArrayList<RangingResult>();
+        List<RangingResult> myAps = new ArrayList<>();
         for(RangingResult res : results){
             if(res.is80211mcMeasurement()){
                 myAps.add(res);
@@ -64,20 +64,20 @@ public class Multilateration {
             ap2Location = new Point3D(loc2.getLatitude(), loc2.getLongitude(), loc2.getAltitude());
             ap3Location = new Point3D(loc3.getLatitude(), loc3.getLongitude(), loc3.getAltitude());
             ap4Location = new Point3D(loc4.getLatitude(), loc4.getLongitude(), loc4.getAltitude());
-            ap1DistanceInMm = myAps.get(0).getDistanceMm();
-            ap2DistanceInMm = myAps.get(1).getDistanceMm();
-            ap3DistanceInMm = myAps.get(2).getDistanceMm();
-            ap4DistanceInMm = myAps.get(3).getDistanceMm();
+            ap1DistanceInMm = myAps.get(0).getDistanceMm() / 1000;
+            ap2DistanceInMm = myAps.get(1).getDistanceMm() / 1000;
+            ap3DistanceInMm = myAps.get(2).getDistanceMm() / 1000;
+            ap4DistanceInMm = myAps.get(3).getDistanceMm() / 1000;
         }
 
         Point3D ap1Center = convertToXYZ(ap1Location.x, ap1Location.y, ap1Location.z);
         Point3D ap2Center = convertToXYZ(ap2Location.x, ap2Location.y, ap2Location.z);
         Point3D ap3Center = convertToXYZ(ap3Location.x, ap3Location.y, ap3Location.z);
         Point3D ap4Center = convertToXYZ(ap4Location.x, ap4Location.y, ap4Location.z);
-        double ap1radius = myAps.get(0).getDistanceMm() / 1000;
-        double ap2radius = myAps.get(1).getDistanceMm() / 1000;
-        double ap3radius = myAps.get(2).getDistanceMm() / 1000;
-        double ap4radius = myAps.get(3).getDistanceMm() / 1000;
+        double ap1radius = ap1DistanceInMm;
+        double ap2radius = ap2DistanceInMm;
+        double ap3radius = ap3DistanceInMm;
+        double ap4radius = ap4DistanceInMm;
 
         Sphere[] spheres = {
                 new Sphere(ap1Center, ap1radius),
@@ -187,14 +187,14 @@ public class Multilateration {
 
     public Point3D calculateLocation(Sphere[] spheres) {
 
-        Circle circle1 = calculateSphereIntersection(spheres[0],spheres[1]);
+        Circle3D circle1 = calculateSphereIntersection(spheres[0],spheres[1]);
         if(circle1 == null){
             Log.d(TAG, "Spheres don't intersect in a circle" );
             return null;
         }
 
         Plane plane = new Plane(circle1.center, circle1.normal);
-        Circle circle2 = planeSphereIntersection(plane, spheres[2]);
+        Circle3D circle2 = planeSphereIntersection(plane, spheres[2]);
 
         if(circle2 == null){
             Log.d(TAG, "Plane and Sphere don't intersect" );
