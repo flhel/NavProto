@@ -1,14 +1,17 @@
 package com.example.navproto.multilateration;
 
-import static com.example.navproto.multilateration.GeometricCalculations3D.circleIntersection;
-import static com.example.navproto.multilateration.GeometricCalculations3D.planeSphereIntersection;
-import static com.example.navproto.multilateration.GeometricCalculations3D.pointOnSphereCheck;
-import static com.example.navproto.multilateration.GeometricCalculations3D.sphereIntersection;
+import static com.example.navproto.multilateration.GeometricCalculations3D.*;
+
+import static java.lang.Math.sqrt;
 
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.rtt.RangingResult;
 import android.util.Log;
+
+import org.locationtech.proj4j.CoordinateTransform;
+import geotrellis.proj4.*;
+import scala.Tuple2;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -17,17 +20,19 @@ public class Multilateration {
 
     private static final String TAG = "Multilateration";
 
+    Point3D coordinatesCenter = new Point3D(50.928280, 6.929074, 0); // eg
+
     // lat, lng, alt
     Point3D ap1Location = new Point3D(50.928393, 6.928548, 3); // eg
     Point3D ap2Location = new Point3D(50.927977, 6.928806, 3); // eg
     Point3D ap3Location = new Point3D(50.928282, 6.929071, 3); // eg
-    Point3D ap4Location = new Point3D(50.927977, 6.928806, 6); // 1og
+    Point3D ap4Location = new Point3D(50.928419, 6.928843, 6); // 1og
 
     // in Millimeters
-    double ap1DistanceInMm = 15000;
-    double ap2DistanceInMm = 15000;
-    double ap3DistanceInMm = 15000;
-    double ap4DistanceInMm = 5000;
+    double ap1DistanceInM = 30.57;
+    double ap2DistanceInM = 30;
+    double ap3DistanceInM = 30;
+    double ap4DistanceInM = 5;
 
     Point3D[] accessPointLocations2 = {
             new Point3D(3, 1, 3),
@@ -64,20 +69,20 @@ public class Multilateration {
             ap2Location = new Point3D(loc2.getLatitude(), loc2.getLongitude(), loc2.getAltitude());
             ap3Location = new Point3D(loc3.getLatitude(), loc3.getLongitude(), loc3.getAltitude());
             ap4Location = new Point3D(loc4.getLatitude(), loc4.getLongitude(), loc4.getAltitude());
-            ap1DistanceInMm = myAps.get(0).getDistanceMm() / 1000;
-            ap2DistanceInMm = myAps.get(1).getDistanceMm() / 1000;
-            ap3DistanceInMm = myAps.get(2).getDistanceMm() / 1000;
-            ap4DistanceInMm = myAps.get(3).getDistanceMm() / 1000;
+            ap1DistanceInM = myAps.get(0).getDistanceMm() / 1000;
+            ap2DistanceInM = myAps.get(1).getDistanceMm() / 1000;
+            ap3DistanceInM = myAps.get(2).getDistanceMm() / 1000;
+            ap4DistanceInM = myAps.get(3).getDistanceMm() / 1000;
         }
 
-        Point3D ap1Center = convertToXYZ(ap1Location.x, ap1Location.y, ap1Location.z);
-        Point3D ap2Center = convertToXYZ(ap2Location.x, ap2Location.y, ap2Location.z);
-        Point3D ap3Center = convertToXYZ(ap3Location.x, ap3Location.y, ap3Location.z);
-        Point3D ap4Center = convertToXYZ(ap4Location.x, ap4Location.y, ap4Location.z);
-        double ap1radius = ap1DistanceInMm;
-        double ap2radius = ap2DistanceInMm;
-        double ap3radius = ap3DistanceInMm;
-        double ap4radius = ap4DistanceInMm;
+        Point3D ap1Center = convertToXYZ(ap1Location);
+        Point3D ap2Center = convertToXYZ(ap2Location);
+        Point3D ap3Center = convertToXYZ(ap3Location);
+        Point3D ap4Center = convertToXYZ(ap4Location);
+        double ap1radius = ap1DistanceInM;
+        double ap2radius = ap2DistanceInM;
+        double ap3radius = ap3DistanceInM;
+        double ap4radius = ap4DistanceInM;
 
         Sphere[] spheres = {
                 new Sphere(ap1Center, ap1radius),
@@ -86,8 +91,8 @@ public class Multilateration {
                 new Sphere(ap4Center, ap4radius)
         };
 
-        //For Testing
-        if(true){
+        //For Testing the Multilateration Algorithm
+        if(false){
             spheres = new Sphere[4];
             for (int i = 0; i < spheres.length; i++) {
                 spheres[i] = new Sphere(accessPointLocations2[i], distances2[i]);
@@ -95,18 +100,14 @@ public class Multilateration {
         }
 
         Point3D locationP3D = computeForAllCombinations(spheres);
-        Point3D locationP3DConverted = convertToLatLngAlt(locationP3D);
+        Point3D locationP3DConverted = convertToLatLngAlt(locationP3D, coordinatesCenter);
+        System.out.println("locationP3DConverted: " + locationP3DConverted);
         return toLocation(locationP3DConverted);
-    }
-
-    private Point3D convertToLatLngAlt(Point3D locationP3D) {
-        //TODO
-        return locationP3D;
     }
 
     public Point3D computeForAllCombinations(Sphere[] spheres) {
         allCombinations = new ArrayList<>();
-        findAllCombinations(spheres.length - 1, spheres);
+        findAllCombinations(spheres.length, spheres);
         // Find the Combination of Spheres that give the Location (not every combination will compute)
         for (Sphere[] spheres1 : allCombinations) {
             Point3D location = calculateLocation(spheres1);
@@ -147,31 +148,31 @@ public class Multilateration {
         spheres[b] = tmp;
     }
 
-    // convert lat/lon/alt (lat in degrees North, lon in degrees East, alt in meters) to earth centered fixed coordinates (x,y,z)
-    private Point3D convertToXYZ(double lat, double lon, double alt) {
-        double Re = 6378137;
-        double Rp = 6356752.31424518;
-
-        double latrad = lat/180.0*Math.PI;
-        double lonrad = lon/180.0*Math.PI;
-
-        double coslat = Math.cos(latrad);
-        double sinlat = Math.sin(latrad);
-        double coslon = Math.cos(lonrad);
-        double sinlon = Math.sin(lonrad);
-
-        double term1 = (Re*Re*coslat)/
-                Math.sqrt(Re*Re*coslat*coslat + Rp*Rp*sinlat*sinlat);
-
-        double term2 = alt*coslat + term1;
-
-        double x=coslon*term2;
-        double y=sinlon*term2;
-        double z = alt*sinlat + (Rp*Rp*sinlat)/
-                Math.sqrt(Re*Re*coslat*coslat + Rp*Rp*sinlat*sinlat);
-
-        return new Point3D(x, y, z);
+    // convert lat/lon/alt (lat in degrees North, lon in degrees East, alt in meters) to University centered fixed coordinates (x,y,z)
+    private Point3D convertToXYZ(Point3D point) {
+        System.out.println("Point coordinates: " + distInM(point, coordinatesCenter).toString());
+        return distInM(point, coordinatesCenter);
     }
+
+    // Calculate the distance in m between two points given in lat lng alt(m)
+    private Point3D distInM(Point3D point1, Point3D point2) {
+        double dx = (71.5 * 1000)  * (point1.x - point2.x);
+        double dy = (111.3 * 1000) * (point1.y - point2.y);
+        double dz = point1.z - point2.z;
+
+        return new Point3D(dx, dy, dz);
+    }
+
+    private Point3D convertToLatLngAlt(Point3D locationP3D, Point3D pCoordCenter) {
+        //TODO
+        double dx = (locationP3D.x + pCoordCenter.x) / (71.5 * 1000);
+        double dy = (locationP3D.y + pCoordCenter.y) / (111.3 * 1000) ;
+        double dz = locationP3D.z;
+
+
+        return new Point3D(dx, dy, dz);
+    }
+
 
     // Make a Location Object out of the Result
     public Location toLocation(Point3D point) {
@@ -208,13 +209,13 @@ public class Multilateration {
             return null;
         }
 
-        Log.d(TAG, "Check if Points are on 4th Sphere:" );
+        //Log.d(TAG, "Check if Points are on 4th Sphere:" );
         for (Point3D point : intersectionPoints) {
-            if(pointOnSphereCheck(point, spheres[3])) {
+            if(pointOnSphereCheck(point, spheres[3], 0.05)) {
                 Log.d(TAG, "My Location: " + point.toString());
                 return point;
             } else {
-                Log.d(TAG, "No: " + point.toString());
+                //Log.d(TAG, "No: " + point.toString());
             }
         }
 

@@ -1,5 +1,8 @@
 package com.example.navproto.multilateration;
 
+import android.icu.math.BigDecimal;
+
+import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class GeometricCalculations3D {
@@ -68,6 +71,11 @@ public class GeometricCalculations3D {
         double radius2 = circle2.radius;
         double distance = center1.distance(center2);
 
+        // The circles don't intersect
+        if (distance > (radius1 + radius2)) {
+            return null;
+        }
+
         // Calculate intersection parameters
         double a = (Math.pow(radius1, 2) - Math.pow(radius2, 2) + Math.pow(distance, 2)) / (2 * distance);
         double h = Math.sqrt(Math.pow(radius1, 2) - Math.pow(a, 2));
@@ -125,11 +133,15 @@ public class GeometricCalculations3D {
     }
 
     // Checks if a Point lays on a Sphere
-    public static boolean pointOnSphereCheck(Point3D point, Sphere sphere) {
+    public static boolean pointOnSphereCheck(Point3D point, Sphere sphere, double precision) {
+
+        if(Double.isNaN(point.x) || Double.isNaN(point.y) || Double.isNaN(point.z)){
+            return false;
+        }
 
         double distance = point.distance(sphere.center);
 
-        if (distance == sphere.radius) {
+        if (distance >= (sphere.radius - precision) && distance <= (sphere.radius + precision) ) {
             return true;
         } else {
             return false;
