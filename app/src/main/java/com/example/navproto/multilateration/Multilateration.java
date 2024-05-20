@@ -9,10 +9,6 @@ import android.location.LocationManager;
 import android.net.wifi.rtt.RangingResult;
 import android.util.Log;
 
-import org.locationtech.proj4j.CoordinateTransform;
-import geotrellis.proj4.*;
-import scala.Tuple2;
-
 import java.util.List;
 import java.util.ArrayList;
 
@@ -20,29 +16,30 @@ public class Multilateration {
 
     private static final String TAG = "Multilateration";
 
-    Point3D coordinatesCenter = new Point3D(50.928280, 6.929074, 0); // eg
+    private final Point3D coordinatesCenter = new Point3D(50.928280, 6.929074, 0); // eg
 
     // lat, lng, alt
-    Point3D ap1Location = new Point3D(50.928393, 6.928548, 3); // eg
-    Point3D ap2Location = new Point3D(50.927977, 6.928806, 3); // eg
-    Point3D ap3Location = new Point3D(50.928282, 6.929071, 3); // eg
-    Point3D ap4Location = new Point3D(50.928419, 6.928843, 6); // 1og
+    private Point3D ap1Location = new Point3D(50.928393, 6.928548, 3); // eg
+    private Point3D ap2Location = new Point3D(50.927977, 6.928806, 3); // eg
+    private Point3D ap3Location = new Point3D(50.928282, 6.929071, 3); // eg
+    private Point3D ap4Location = new Point3D(50.928419, 6.928843, 6); // 1og
 
     // in Millimeters
-    double ap1DistanceInM = 30.57;
-    double ap2DistanceInM = 30;
-    double ap3DistanceInM = 30;
-    double ap4DistanceInM = 5;
+    private double ap1DistanceInM = 30.57;
+    private double ap2DistanceInM = 30;
+    private double ap3DistanceInM = 30;
+    private double ap4DistanceInM = 5;
 
-    Point3D[] accessPointLocations2 = {
+    //Test Code
+    private Point3D[] accessPointLocations2 = {
             new Point3D(3, 1, 3),
             new Point3D(2, 1, 1),
             new Point3D(3, 2, 1),
             new Point3D(5, 1, 1)
     };
 
-
-    double[] distances2 = {2, 1, 1, 2};
+    //Test Code
+    private double[] distances2 = {2, 1, 1, 2};
 
     // Stores all possible combinations of the 4 Spheres
     ArrayList<Sphere[]> allCombinations;
@@ -75,10 +72,10 @@ public class Multilateration {
             ap4DistanceInM = myAps.get(3).getDistanceMm() / 1000;
         }
 
-        Point3D ap1Center = convertToXYZ(ap1Location);
-        Point3D ap2Center = convertToXYZ(ap2Location);
-        Point3D ap3Center = convertToXYZ(ap3Location);
-        Point3D ap4Center = convertToXYZ(ap4Location);
+        Point3D ap1Center = convertToXYZ(ap1Location, coordinatesCenter);
+        Point3D ap2Center = convertToXYZ(ap2Location, coordinatesCenter);
+        Point3D ap3Center = convertToXYZ(ap3Location, coordinatesCenter);
+        Point3D ap4Center = convertToXYZ(ap4Location, coordinatesCenter);
         double ap1radius = ap1DistanceInM;
         double ap2radius = ap2DistanceInM;
         double ap3radius = ap3DistanceInM;
@@ -148,27 +145,23 @@ public class Multilateration {
         spheres[b] = tmp;
     }
 
-    // convert lat/lon/alt (lat in degrees North, lon in degrees East, alt in meters) to University centered fixed coordinates (x,y,z)
-    private Point3D convertToXYZ(Point3D point) {
-        System.out.println("Point coordinates: " + distInM(point, coordinatesCenter).toString());
-        return distInM(point, coordinatesCenter);
-    }
-
-    // Calculate the distance in m between two points given in lat lng alt(m)
-    private Point3D distInM(Point3D point1, Point3D point2) {
-        double dx = (71.5 * 1000)  * (point1.x - point2.x);
-        double dy = (111.3 * 1000) * (point1.y - point2.y);
-        double dz = point1.z - point2.z;
+    /* convert lat/lon/alt (lat in degrees North, lon in degrees East, alt in meters)
+       to a (x,y,z) System in Meters where 0,0,0 is at "coordinatesCenter" (lat,lng,alt)
+       this is done by calculation  the distance in m between two points given in lat lng alt(m)
+    */
+    private Point3D convertToXYZ(Point3D locationP3D, Point3D pCoordCenter) {
+        double dx = (71.5 * 1000)  * (locationP3D.x - pCoordCenter.x);
+        double dy = (111.3 * 1000) * (locationP3D.y - pCoordCenter.y);
+        double dz = locationP3D.z - pCoordCenter.z;
 
         return new Point3D(dx, dy, dz);
     }
 
+    // Calculate the locations (lat,lng,alt) from the distance to the  "coordinatesCenter" in meters
     private Point3D convertToLatLngAlt(Point3D locationP3D, Point3D pCoordCenter) {
-        //TODO
-        double dx = (locationP3D.x + pCoordCenter.x) / (71.5 * 1000);
-        double dy = (locationP3D.y + pCoordCenter.y) / (111.3 * 1000) ;
-        double dz = locationP3D.z;
-
+        double dx = pCoordCenter.x + (locationP3D.x / (71.5 * 1000));
+        double dy = pCoordCenter.y + (locationP3D.y / (111.3 * 1000)) ;
+        double dz = pCoordCenter.z + locationP3D.z;
 
         return new Point3D(dx, dy, dz);
     }
