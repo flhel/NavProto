@@ -31,7 +31,7 @@ public class Multilateration {
     private double ap4DistanceInM = 5;
 
     //Test Code
-    private Point3D[] accessPointLocations2 = {
+    private final Point3D[] accessPointLocations2 = {
             new Point3D(3, 1, 3),
             new Point3D(2, 1, 1),
             new Point3D(3, 2, 1),
@@ -39,7 +39,7 @@ public class Multilateration {
     };
 
     //Test Code
-    private double[] distances2 = {2, 1, 1, 2};
+    private final double[] distances2 = {2, 1, 1, 2};
 
     // Stores all possible combinations of the 4 Spheres
     ArrayList<Sphere[]> allCombinations;
@@ -66,10 +66,10 @@ public class Multilateration {
             ap2Location = new Point3D(loc2.getLatitude(), loc2.getLongitude(), loc2.getAltitude());
             ap3Location = new Point3D(loc3.getLatitude(), loc3.getLongitude(), loc3.getAltitude());
             ap4Location = new Point3D(loc4.getLatitude(), loc4.getLongitude(), loc4.getAltitude());
-            ap1DistanceInM = myAps.get(0).getDistanceMm() / 1000;
-            ap2DistanceInM = myAps.get(1).getDistanceMm() / 1000;
-            ap3DistanceInM = myAps.get(2).getDistanceMm() / 1000;
-            ap4DistanceInM = myAps.get(3).getDistanceMm() / 1000;
+            ap1DistanceInM = myAps.get(0).getDistanceMm() / 1000.0;
+            ap2DistanceInM = myAps.get(1).getDistanceMm() / 1000.0;
+            ap3DistanceInM = myAps.get(2).getDistanceMm() / 1000.0;
+            ap4DistanceInM = myAps.get(3).getDistanceMm() / 1000.0;
         }
 
         Point3D ap1Center = convertToXYZ(ap1Location, coordinatesCenter);

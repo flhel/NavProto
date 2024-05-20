@@ -139,8 +139,10 @@ public class GeometricCalculations3D {
             return false;
         }
 
+        // Calculate the distance of the point to the spheres center
         double distance = point.distance(sphere.center);
 
+        // Check if the distance to the spheres center matches the radius within the specified precision
         if (distance >= (sphere.radius - precision) && distance <= (sphere.radius + precision) ) {
             return true;
         } else {

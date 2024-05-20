@@ -58,8 +58,8 @@ public class MyWifiRttManager {
             boolean forTesting = true;
             if(forTesting){
                 myLocationListener.onLocationChanged(
-                        new Trilateration().findPosition(new ArrayList<RangingResult>()
-                        //new Multilateration().findPosition(new ArrayList<RangingResult>())
+                        //new Trilateration().findPosition(new ArrayList<RangingResult>()
+                        new Multilateration().findPosition(new ArrayList<RangingResult>()
                         ));
             }
             return;
@@ -86,5 +86,10 @@ public class MyWifiRttManager {
 
         Log.d(TAG,"startRanging...");
         wifiRttManager.startRanging(request, mainExecutor, callback);
+    }
+
+    public void removeUpdates( MyLocationListener myLocationListener){
+        //TODO
+        wifiRttManager = null;
     }
 }

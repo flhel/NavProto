@@ -7,8 +7,11 @@ import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.rtt.RangingResult;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.example.navproto.databinding.ActivityMainBinding;
 import com.example.navproto.multilateration.Multilateration;
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
         wifiNetworkAdapter = new WifiNetworkAdapter(this);
 
+        //Set default Location Method to GPS
+        binding.rbGPS.toggle();
 
         binding.scanWifis.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,9 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // 1. Get APs from connected Network
                 ArrayList<ScanResult> wifis = (ArrayList) wifiNetworkAdapter.getNetworkAccessPoints();
-
-                //Test
-                new Multilateration().findPosition(new ArrayList<RangingResult>());
 
                 // 2. Get Networks
                 //wifiNetworkAdapter.setWifiNetworks();
@@ -77,10 +79,18 @@ public class MainActivity extends AppCompatActivity {
         binding.showLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Change Activity to OSM
                 Intent intent = new Intent(MainActivity.this, OpenStreetMap.class);
+
+                // Get the selected localisation method
+                intent.putExtra("boolean_use_gps", binding.rbGPS.isChecked());
+                intent.putExtra("boolean_use_network", binding.rbNetwork.isChecked());
+                intent.putExtra("boolean_use_rtt", binding.rbRTT.isChecked());
+
                 startActivity(intent);
                 finish();
             }
         });
+
     }
 }

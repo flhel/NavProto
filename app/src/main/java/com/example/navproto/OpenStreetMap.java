@@ -3,6 +3,7 @@ package com.example.navproto;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.location.GpsStatus;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
 
@@ -18,6 +19,7 @@ import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.mylocation.IMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 public class OpenStreetMap extends AppCompatActivity implements MapListener, GpsStatus.Listener {
@@ -32,6 +34,11 @@ public class OpenStreetMap extends AppCompatActivity implements MapListener, Gps
         super.onCreate(savedInstanceState);
         OSMbinding = ActivityOpenStreetMapBinding.inflate(getLayoutInflater());
         setContentView(OSMbinding.getRoot());
+
+        Bundle bundle = getIntent().getExtras();
+        boolean useGps = bundle.getBoolean("boolean_use_gps");
+        boolean useNetwork = bundle.getBoolean("boolean_use_network");
+        boolean useWifiRtt = bundle.getBoolean("boolean_use_rtt");
 
         Configuration.getInstance().load(
                 getApplicationContext(),
@@ -55,11 +62,26 @@ public class OpenStreetMap extends AppCompatActivity implements MapListener, Gps
 
         /*
             Using the different Location Providers
-            Network
+            Network (Signal strength)
             GPS
             WIFI RTT
          */
-        mMyLocationOverlay = new MyLocationNewOverlay(new MyLocationProvider(this), mMap);
+        IMyLocationProvider locationProvider = null;
+        if(useGps){
+            locationProvider = new MyLocationProviderGPS(this);
+        }
+        if(useNetwork){
+            locationProvider = new MyLocationProviderNetwork(this);
+        }
+        if(useWifiRtt){
+            locationProvider = new MyLocationProviderWifiRTT(this);
+        }
+        if(locationProvider == null){
+            // should never occur
+            return;
+        }
+
+        mMyLocationOverlay = new MyLocationNewOverlay(locationProvider, mMap);
 
         controller = mMap.getController();
 
@@ -72,9 +94,6 @@ public class OpenStreetMap extends AppCompatActivity implements MapListener, Gps
         }));
 
         controller.setZoom(20.0);
-
-        //Log.e("TAG", "onCreate:in " + controller.zoomIn());
-        //Log.e("TAG", "onCreate: out " + controller.zoomOut());
 
         mMap.getOverlays().add(mMyLocationOverlay);
         mMap.addMapListener(this);
