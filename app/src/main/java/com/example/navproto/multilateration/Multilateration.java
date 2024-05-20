@@ -44,7 +44,7 @@ public class Multilateration {
     // Stores all possible combinations of the 4 Spheres
     ArrayList<Sphere[]> allCombinations;
 
-    public Location findPosition(ArrayList<RangingResult> results) {
+    public Location findPosition(List<RangingResult> results) {
 
         List<RangingResult> myAps = new ArrayList<>();
         for(RangingResult res : results){

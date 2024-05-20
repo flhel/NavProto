@@ -55,7 +55,7 @@ public class MyWifiRttManager {
         //Check if everything is there
         if(wifiRttManager == null){
             //Test Code if Hardware is missing the Capabilities
-            boolean forTesting = true;
+            boolean forTesting = false;
             if(forTesting){
                 myLocationListener.onLocationChanged(
                         //new Trilateration().findPosition(new ArrayList<RangingResult>()
@@ -79,7 +79,7 @@ public class MyWifiRttManager {
             public void onRangingResults(List<RangingResult> results) {
                 Log.d(TAG,"WiFi-Ranging success: " + results);
                 if (myLocationListener != null) {
-                    myLocationListener.onLocationChanged(new Trilateration().findPosition(results));
+                    myLocationListener.onLocationChanged(new Multilateration().findPosition(results));
                 }
             }
         };
