@@ -1,4 +1,4 @@
-package com.example.navproto;
+package com.example.navproto.MyLocationServices;
 
 import android.location.Location;
 

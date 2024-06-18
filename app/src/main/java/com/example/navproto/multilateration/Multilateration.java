@@ -2,8 +2,7 @@ package com.example.navproto.multilateration;
 
 import static com.example.navproto.multilateration.GeometricCalculations3D.*;
 
-import static java.lang.Math.sqrt;
-
+import android.bluetooth.le.ScanResult;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.rtt.RangingResult;
@@ -44,7 +43,53 @@ public class Multilateration {
     // Stores all possible combinations of the 4 Spheres
     ArrayList<Sphere[]> allCombinations;
 
-    public Location findPosition(List<RangingResult> results) {
+    public Location findPositionBLE(List<ScanResult> results) {
+
+        if(results.size() < 4){
+            Log.d(TAG,"Not enough Reference Points for positioning!");
+            return null;
+        }
+
+        double[] distances = computeDistances(results);
+
+        Log.d(TAG,"Distances: " + distances[0]
+                + " " + distances[1]
+                + " " + distances[2]
+                + " " + distances[3]
+        );
+
+        double ap1radius = distances[0];
+        double ap2radius = distances[1];
+        double ap3radius = distances[2];
+        double ap4radius = distances[3];
+
+        Point3D ap1Center = convertToXYZ(ap1Location, coordinatesCenter);
+        Point3D ap2Center = convertToXYZ(ap2Location, coordinatesCenter);
+        Point3D ap3Center = convertToXYZ(ap3Location, coordinatesCenter);
+        Point3D ap4Center = convertToXYZ(ap4Location, coordinatesCenter);
+
+        Sphere[] spheres = {
+                new Sphere(ap1Center, ap1radius),
+                new Sphere(ap2Center, ap2radius),
+                new Sphere(ap3Center, ap3radius),
+                new Sphere(ap4Center, ap4radius)
+        };
+
+        return findPosition(spheres);
+    }
+
+    // Computes the distance in Meters from txPower (transmission power) and RSSI (Received Signal Strength Indicator)
+    private double[] computeDistances(List<ScanResult> myAps){
+        double[] distances = new double[myAps.size()];
+
+        for(int i = 0; i < myAps.size(); i++){
+            ScanResult res = myAps.get(i);
+            distances[i] = Math.pow(10, (res.getScanRecord().getTxPowerLevel() - myAps.get(i).getRssi()) / 20.0) / 1000;
+        }
+        return distances;
+    }
+
+    public Location findPositionRTT(List<RangingResult> results) {
 
         List<RangingResult> myAps = new ArrayList<>();
         for(RangingResult res : results){
@@ -96,7 +141,15 @@ public class Multilateration {
             }
         }
 
+        return findPosition(spheres);
+    }
+
+    private Location findPosition(Sphere[] spheres) {
         Point3D locationP3D = computeForAllCombinations(spheres);
+        if(locationP3D == null){
+            Log.e(TAG, "There is no common intersection!");
+            return null;
+        }
         Point3D locationP3DConverted = convertToLatLngAlt(locationP3D, coordinatesCenter);
         System.out.println("locationP3DConverted: " + locationP3DConverted);
         return toLocation(locationP3DConverted);

@@ -1,14 +1,15 @@
-package com.example.navproto;
+package com.example.navproto.MyLocationServices;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+
+import com.example.navproto.WifiNetworkAdapter;
 
 import org.osmdroid.api.IMapView;
 import org.osmdroid.views.overlay.mylocation.IMyLocationConsumer;
@@ -42,18 +43,19 @@ public class MyLocationProviderWifiRTT implements IMyLocationProvider {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
-        if (mWifi.isConnected()) {
-            Log.d(TAG,"Wifi connected");
+        if (mWifi != null && mWifi.isConnected()) {
+            Log.i(TAG,"Wifi: Connected");
+        } else {
+            Log.e(TAG,"Wifi: Not connected");
+            //return false;
         }
 
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WIFI_RTT)) {
-            Log.d(TAG,"Wifi RTT: Aviable");
+            Log.i(TAG,"Wifi RTT: Available");
         } else {
-            Log.d(TAG,"Wifi RTT: Missing");
+            Log.e(TAG,"Wifi RTT: Unavailable on Device");
+            //return false;
         }
-
-        //TODO
-        myWifiRttManager.checkEnabled();
 
         if(listenForWifiRttLocation()){
             return true;
@@ -75,7 +77,7 @@ public class MyLocationProviderWifiRTT implements IMyLocationProvider {
             };
 
             wifiNetworkAdapter.setWifiNetworks();
-            myWifiRttManager.requestLocationUpdates(wifiNetworkAdapter.getWifiNetworks(), mylocationListener);
+            myWifiRttManager.requestLocationUpdates(wifiNetworkAdapter.getNetworkAccessPoints(), mylocationListener);
             return true;
 
         }catch(Exception e){

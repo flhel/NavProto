@@ -9,7 +9,7 @@
     <ScrollView
         android:id="@+id/scroll_view"
         android:layout_width="409dp"
-        android:layout_height="354dp"
+        android:layout_height="330dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -39,7 +39,7 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="Scan Wifis"
+        android:text="Scan connected Network"
         app:layout_constraintBottom_toTopOf="@+id/scroll_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +48,7 @@
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="293dp"
-        android:layout_height="146dp"
+        android:layout_height="195dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -81,6 +81,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="RTT" />
+
+            <RadioButton
+                android:id="@+id/rbBluetooth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Bluetooth" />
 
         </RadioGroup>
 

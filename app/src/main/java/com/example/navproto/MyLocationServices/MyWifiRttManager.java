@@ -1,12 +1,7 @@
-package com.example.navproto;
-
-import static android.content.ContentValues.TAG;
+package com.example.navproto.MyLocationServices;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.rtt.RangingRequest;
 import android.net.wifi.rtt.RangingResult;
@@ -33,34 +28,16 @@ public class MyWifiRttManager {
         mainExecutor = context.getMainExecutor();
     }
 
-    public void checkEnabled(){
-        IntentFilter filter =
-                new IntentFilter(WifiRttManager.ACTION_WIFI_RTT_STATE_CHANGED);
-        BroadcastReceiver myReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (wifiRttManager.isAvailable()) {
-                    Log.d(TAG,"Wifi RTT: Active");
-                } else {
-                    Log.d(TAG,"Wifi RTT: Disabled");
-                }
-            }
-        };
-        context.registerReceiver(myReceiver, filter);
-    }
-
     @SuppressLint("MissingPermission")
     public void requestLocationUpdates(List<ScanResult> scanResults, MyLocationListener myLocationListener){
 
         //Check if everything is there
         if(wifiRttManager == null){
-            //Test Code if Hardware is missing the Capabilities
+            // Test Code for Multilateration if Hardware is missing the Wifi RTT Capabilities
             boolean forTesting = false;
             if(forTesting){
                 myLocationListener.onLocationChanged(
-                        //new Trilateration().findPosition(new ArrayList<RangingResult>()
-                        new Multilateration().findPosition(new ArrayList<RangingResult>()
-                        ));
+                        new Multilateration().findPositionRTT(new ArrayList<RangingResult>()));
             }
             return;
         }
@@ -68,8 +45,10 @@ public class MyWifiRttManager {
             return;
         }
 
+        // Build the RangingRequest
         RangingRequest request = new RangingRequest.Builder().addAccessPoints(scanResults).build();
 
+        // Build the Callback
         final RangingResultCallback callback = new RangingResultCallback() {
             @Override
             public void onRangingFailure(int code) {
@@ -79,11 +58,12 @@ public class MyWifiRttManager {
             public void onRangingResults(List<RangingResult> results) {
                 Log.d(TAG,"WiFi-Ranging success: " + results);
                 if (myLocationListener != null) {
-                    myLocationListener.onLocationChanged(new Multilateration().findPosition(results));
+                    myLocationListener.onLocationChanged(new Multilateration().findPositionRTT(results));
                 }
             }
         };
 
+        // Start requesting Ranges
         Log.d(TAG,"startRanging...");
         wifiRttManager.startRanging(request, mainExecutor, callback);
     }

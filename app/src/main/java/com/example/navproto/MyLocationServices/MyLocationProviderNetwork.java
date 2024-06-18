@@ -1,49 +1,61 @@
-package com.example.navproto;
+package com.example.navproto.MyLocationServices;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
+
+import com.example.navproto.WifiNetworkAdapter;
 
 import org.osmdroid.api.IMapView;
 import org.osmdroid.views.overlay.mylocation.IMyLocationConsumer;
 import org.osmdroid.views.overlay.mylocation.IMyLocationProvider;
 
-
-public class MyLocationProviderGPS implements IMyLocationProvider {
+public class MyLocationProviderNetwork implements IMyLocationProvider {
 
     Context context;
     LocationManager locationManager;
-    MyLocationProviderGPS myLocationProvider;
+    WifiNetworkAdapter wifiNetworkAdapter;
+    MyLocationProviderNetwork myLocationProvider;
 
-    private static final String TAG = MyLocationProviderGPS.class.getSimpleName();
+    private static final String TAG = MyLocationProviderNetwork.class.getSimpleName();
 
     private Location myLocation;
     private IMyLocationConsumer locationConsumer;
-    LocationListener locationListenerGPS;
+    LocationListener locationListenerNetwork;
 
-    public MyLocationProviderGPS(Context c){
+    public MyLocationProviderNetwork(Context c){
         context = c;
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        wifiNetworkAdapter = new WifiNetworkAdapter(context);
         myLocationProvider = this;
     }
 
     public boolean updateLocation(){
 
-        boolean gpsEnabled = false;
+        boolean networkEnabled=false;
 
-        //check gps and wifi availability
-        try{
-            gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        }catch(Exception ex){}
+        //check wifi
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
-        if(!gpsEnabled){
-            Log.d(TAG,"GPS: Missing");
+        if (mWifi.isConnected()) {
+            Log.d(TAG,"Wifi connected");
         }
 
-        if(listenForGpsLocation()){
+        try{
+            networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        }catch(Exception ex){}
+
+        if(!networkEnabled){
+            Log.d(TAG,"Network: Missing");
+        }
+
+        if(listenForNetworkLocation()){
             return true;
         }
 
@@ -51,18 +63,18 @@ public class MyLocationProviderGPS implements IMyLocationProvider {
     }
 
     @SuppressLint("MissingPermission")
-    private boolean listenForGpsLocation() {
+    private boolean listenForNetworkLocation() {
         try{
-            // Define a listener that responds to gps location updates
-            locationListenerGPS = new LocationListener() {
+            // Define a listener that responds to wifi location updates
+            locationListenerNetwork = new LocationListener() {
                 public void onLocationChanged(Location location) {
-                    Log.d(TAG,"GPS: Latitude, Longitude = " + location.getLatitude() + ", " + location.getLongitude());
+                    Log.d(TAG,"NW: Latitude, Longitude =  " + location.getLatitude() + ", " + location.getLongitude());
                     myLocation = location;
                     locationConsumer.onLocationChanged(myLocation, myLocationProvider);
                 }
             };
 
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGPS);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
             return true;
 
         }catch(Exception e){
@@ -82,7 +94,7 @@ public class MyLocationProviderGPS implements IMyLocationProvider {
         locationConsumer = null;
         if (locationManager != null) {
             try {
-                locationManager.removeUpdates(locationListenerGPS);
+                locationManager.removeUpdates(locationListenerNetwork);
             } catch (Throwable ex) {
                 Log.w(IMapView.LOGTAG, "Unable to deattach location listener", ex);
             }

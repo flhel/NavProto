@@ -27,7 +27,7 @@ public class WifiNetworkAdapter {
     private String ssid = "";
     private String bssid = "";
 
-    WifiNetworkAdapter(final Context context) {
+    public WifiNetworkAdapter(final Context context) {
         this.context = context;
         wifiNetworks = null;
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -47,7 +47,7 @@ public class WifiNetworkAdapter {
     }
 
     @SuppressLint("MissingPermission")
-    void setWifiNetworks() {
+    public void setWifiNetworks() {
         List<ScanResult> wifiNetworks = wifiManager.getScanResults();
         if (wifiNetworks == null) {
             return;
@@ -67,13 +67,17 @@ public class WifiNetworkAdapter {
     @SuppressLint("MissingPermission")
     // Get all the Access Points available in the currently connected wifi network
     public List<ScanResult> getNetworkAccessPoints(){
+        if(ssid == null){
+            //Not connected to a Network
+            return null;
+        }
         List<ScanResult> wifiAccessPoints = new ArrayList<ScanResult>();
         List<ScanResult> wifiNetworks = wifiManager.getScanResults();
 
         if (wifiNetworks == null) {
             return null;
         }
-        final List<ScanResult> filteredResults = new ArrayList<>(wifiNetworks.size());
+
         for (ScanResult result : wifiNetworks) {
             if (ssid.equals(result.SSID)) {
                 wifiAccessPoints.add(result);

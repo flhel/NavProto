@@ -23,10 +23,10 @@ public class GeometricCalculations3D {
             // No intersection
             return null;
         } else if (distance == 0 && radius1 == radius2) {
-            // Circles are the same
+            // Spheres are the same
             return null;
         } else if (distance == radius1 + radius2 || distance == Math.abs(radius1 - radius2)) {
-            // Circles touch externally or internally
+            // Spheres touch externally or internally
             return null;
         } else {
             // Calculate intersection circle parameters
