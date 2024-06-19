@@ -76,7 +76,6 @@ public class MyLocationProviderWifiRTT implements IMyLocationProvider {
                 }
             };
 
-            wifiNetworkAdapter.setWifiNetworks();
             myWifiRttManager.requestLocationUpdates(wifiNetworkAdapter.getNetworkAccessPoints(), mylocationListener);
             return true;
 

@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
 
     WifiNetworkAdapter wifiNetworkAdapter;
-
     GeoPoint myLastKnownLocation;
 
     @Override
@@ -84,8 +83,12 @@ public class MainActivity extends AppCompatActivity {
     }
     private void setNetworkList() {
         wifiNetworkAdapter = new WifiNetworkAdapter(context);
+        if(wifiNetworkAdapter == null){
+            return;
+        }
         ArrayList<ScanResult> wifis = (ArrayList) wifiNetworkAdapter.getNetworkAccessPoints();
-        if(wifis != null){
+
+        if(wifis != null && wifis.isEmpty() == false){
             ArrayAdapter arrayAdapter = getArrayAdapter(wifis);
             binding.wifiNetworkList.setAdapter(arrayAdapter);
         } else {

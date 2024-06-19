@@ -43,9 +43,16 @@ public class MyBluetoothAdapter {
 
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
 
+        List<Beacon> list = new ArrayList<Beacon>(beacons.values());
+
+        for(Beacon beacon : list){
+            filters.add(new ScanFilter.Builder().setDeviceAddress(beacon.address).build());
+        }
+
+
         settings = new ScanSettings.Builder()
-                .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
-                //.setReportDelay((long) 3000.0)
+                //.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+                .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
                 .build();
 
         callback  = new ScanCallback() {
@@ -53,7 +60,8 @@ public class MyBluetoothAdapter {
             public void onScanResult(int callbackType, ScanResult result) {
 
                 //Check if its one of our btBeacons
-                if(beacons.get(result.getDevice().getAddress()) != null ) {
+                Beacon myBeacon = beacons.get(result.getDevice().getAddress());
+                if(myBeacon != null) {
                     for(int i = 0; i < btScanResults.size(); i++){
                         // Check for duplicate
                         if(btScanResults.get(i).getDevice().getAddress().equals(result.getDevice().getAddress())){
@@ -63,6 +71,10 @@ public class MyBluetoothAdapter {
                     }
                     // Add ScanResult
                     btScanResults.add(result);
+
+                    Log.d(TAG, "TxPowerLevel: " + myBeacon.measuredRssi + " RSSI" + result.getRssi());
+                    double dist = Math.pow(10, (myBeacon.measuredRssi - result.getRssi()) / 20.0);
+                    Log.d(TAG, "Distanz: " + dist);
                 }
 
                 // Give bundled List to the Multilateration-Algorithm
@@ -75,6 +87,8 @@ public class MyBluetoothAdapter {
             }
         };
 
+
+
         Log.i(TAG, "Scanning for Bluetooth Beacons");
         bluetoothLeScanner.startScan(filters, settings, callback);
     }
@@ -86,11 +100,12 @@ public class MyBluetoothAdapter {
 
     // Add Hardcoded Beacon Locations to the Map
     private void putMyBeacons() {
+        //TODO put real values here
         beacons = new HashMap<>();
-        beacons.put("CC:B1:1A:E1:17:D5", new Beacon("CC:B1:1A:E1:17:D5", 50.928393, 6.928548, 3));
-        beacons.put("6E:E7:CF:7A:D6:22", new Beacon("6E:E7:CF:7A:D6:22", 50.927977, 6.928806, 3));
-        beacons.put("6C:04:08:66:09:65", new Beacon("6C:04:08:66:09:65", 50.928282, 6.929071, 3));
-        beacons.put("43:33:76:4F:56:BC", new Beacon("43:33:76:4F:56:BC", 50.928419, 6.928843, 6));
+        beacons.put("88:C6:26:AC:F4:1F", new Beacon("88:C6:26:AC:F4:1F", 50.928393, 6.928548, 3, -48.5));
+        beacons.put("24:15:10:30:1B:FF", new Beacon("24:15:10:30:1B:FF", 50.927977, 6.928806, 3, -55));
+        beacons.put("04:57:91:08:D5:2E", new Beacon("04:57:91:08:D5:2E", 50.928282, 6.929071, 3, -55));
+        beacons.put("A4:08:01:CF:17:1E", new Beacon("A4:08:01:CF:17:1E", 50.928419, 6.928843, 3, -55));
     }
 
     //Bluetooth Beacon Class
@@ -99,12 +114,14 @@ public class MyBluetoothAdapter {
         private double lat;
         private double lng;
         private double alt;
+        private double measuredRssi;
 
-        public Beacon(String address, double lat, double lng, double alt) {
+        public Beacon(String address, double lat, double lng, double alt, double measuredRssi) {
             this.address = address;
             this.lat = lat;
             this.lng = lng;
             this.alt = alt;
+            this.measuredRssi = measuredRssi;
         }
     }
 }

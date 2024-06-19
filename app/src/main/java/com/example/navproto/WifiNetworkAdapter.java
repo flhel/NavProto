@@ -23,13 +23,11 @@ public class WifiNetworkAdapter {
     private final Context context;
     private WifiManager wifiManager;
     private WifiInfo wifiInfo;
-    private List<ScanResult> wifiNetworks;
     private String ssid = "";
     private String bssid = "";
 
     public WifiNetworkAdapter(final Context context) {
         this.context = context;
-        wifiNetworks = null;
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         wifiInfo = wifiManager.getConnectionInfo();
 
@@ -42,15 +40,12 @@ public class WifiNetworkAdapter {
         }
     }
 
-    public List<ScanResult> getWifiNetworks() {
-        return wifiNetworks;
-    }
-
     @SuppressLint("MissingPermission")
-    public void setWifiNetworks() {
+    // Get all currently available networks
+    public List<ScanResult> getWifiNetworks() {
         List<ScanResult> wifiNetworks = wifiManager.getScanResults();
         if (wifiNetworks == null) {
-            return;
+            return null;
         }
         final List<String> duplicates = new ArrayList<>(wifiNetworks.size());
         final List<ScanResult> filteredResults = new ArrayList<>(wifiNetworks.size());
@@ -61,7 +56,8 @@ public class WifiNetworkAdapter {
                 filteredResults.add(result);
             }
         }
-        this.wifiNetworks = filteredResults;
+        wifiNetworks = filteredResults;
+        return wifiNetworks;
     }
 
     @SuppressLint("MissingPermission")
@@ -72,13 +68,12 @@ public class WifiNetworkAdapter {
             return null;
         }
         List<ScanResult> wifiAccessPoints = new ArrayList<ScanResult>();
-        List<ScanResult> wifiNetworks = wifiManager.getScanResults();
-
-        if (wifiNetworks == null) {
+        List<ScanResult> wifiScanResults = wifiManager.getScanResults();
+        if (wifiScanResults == null) {
             return null;
         }
 
-        for (ScanResult result : wifiNetworks) {
+        for (ScanResult result : wifiScanResults) {
             if (ssid.equals(result.SSID)) {
                 wifiAccessPoints.add(result);
             }
