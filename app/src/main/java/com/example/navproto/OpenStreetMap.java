@@ -10,8 +10,8 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.example.navproto.MyLocationServices.MyLocationProviderBleRssi;
 import com.example.navproto.databinding.ActivityOpenStreetMapBinding;
-import com.example.navproto.MyLocationServices.MyLocationProviderBluetooth;
 import com.example.navproto.MyLocationServices.MyLocationProviderGPS;
 import com.example.navproto.MyLocationServices.MyLocationProviderNetwork;
 import com.example.navproto.MyLocationServices.MyLocationProviderWifiRTT;
@@ -96,7 +96,7 @@ public class OpenStreetMap extends AppCompatActivity implements MapListener, Gps
             locationProvider = new MyLocationProviderWifiRTT(this);
         }
         if(useBluetooth){
-            locationProvider = new MyLocationProviderBluetooth(this);
+            locationProvider = new MyLocationProviderBleRssi(this);
         }
         if(locationProvider == null){
             // should never occur unless a feature is not supported eg. Wifi RTT

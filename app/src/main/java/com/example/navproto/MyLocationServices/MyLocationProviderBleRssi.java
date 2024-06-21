@@ -11,21 +11,21 @@ import androidx.annotation.NonNull;
 import org.osmdroid.views.overlay.mylocation.IMyLocationConsumer;
 import org.osmdroid.views.overlay.mylocation.IMyLocationProvider;
 
-public class MyLocationProviderBluetooth implements IMyLocationProvider {
-    private static final String TAG = "MyLocationProviderBluetooth";
+public class MyLocationProviderBleRssi implements IMyLocationProvider {
+    private static final String TAG = "MyLocationProviderBleRssi";
     Context context;
     LocationManager locationManager;
-    MyBluetoothAdapter myBluetoothAdapter;
-    MyLocationProviderBluetooth myLocationProvider;
+    MyManagerBleRssi myBluetoothAdapter;
+    MyLocationProviderBleRssi myLocationProvider;
 
     private Location myLocation;
     private IMyLocationConsumer locationConsumer;
     MyLocationListener mylocationListener;
 
-    public MyLocationProviderBluetooth(Context c){
+    public MyLocationProviderBleRssi(Context c){
         context = c;
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        myBluetoothAdapter = new MyBluetoothAdapter();
+        myBluetoothAdapter = new MyManagerBleRssi();
         myLocationProvider = this;
     }
 
@@ -35,9 +35,12 @@ public class MyLocationProviderBluetooth implements IMyLocationProvider {
             // Define a listener that responds to bt location updates
             mylocationListener = new MyLocationListener() {
                 public void onLocationChanged(@NonNull Location location) {
-                    Log.d(TAG,"Bluetooth: Latitude, Longitude = " + location.getLatitude() + ", " + location.getLongitude());
-                    myLocation = location;
-                    locationConsumer.onLocationChanged(myLocation, myLocationProvider);
+                    if(location != null){
+                        Log.d(TAG,"Bluetooth: Latitude, Longitude = "
+                                + location.getLatitude() + ", " + location.getLongitude() + ", " + location.getAltitude());
+                        myLocation = location;
+                        locationConsumer.onLocationChanged(myLocation, myLocationProvider);
+                    }
                 }
             };
 

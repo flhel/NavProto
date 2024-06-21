@@ -19,7 +19,7 @@ public class MyLocationProviderWifiRTT implements IMyLocationProvider {
 
     Context context;
     LocationManager locationManager;
-    MyWifiRttManager myWifiRttManager;
+    MyManagerWifiRtt myWifiRttManager;
     WifiNetworkAdapter wifiNetworkAdapter;
     MyLocationProviderWifiRTT myLocationProvider;
 
@@ -32,7 +32,7 @@ public class MyLocationProviderWifiRTT implements IMyLocationProvider {
     public MyLocationProviderWifiRTT(Context c){
         context = c;
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        myWifiRttManager = new MyWifiRttManager(context);
+        myWifiRttManager = new MyManagerWifiRtt(context);
         wifiNetworkAdapter = new WifiNetworkAdapter(context);
         myLocationProvider = this;
     }
@@ -70,9 +70,12 @@ public class MyLocationProviderWifiRTT implements IMyLocationProvider {
             // Define a listener that responds to rtt location updates
             mylocationListener = new MyLocationListener() {
                 public void onLocationChanged(Location location) {
-                    Log.d(TAG,"WifiRTT: Latitude, Longitude = " + location.getLatitude() + ", " + location.getLongitude());
-                    myLocation = location;
-                    locationConsumer.onLocationChanged(myLocation, myLocationProvider);
+                    if(location != null) {
+                        Log.d(TAG, "WifiRTT: Latitude, Longitude, Altitude = "
+                                + location.getLatitude() + ", " + location.getLongitude() + ", " + location.getAltitude());
+                        myLocation = location;
+                        locationConsumer.onLocationChanged(myLocation, myLocationProvider);
+                    }
                 }
             };
 

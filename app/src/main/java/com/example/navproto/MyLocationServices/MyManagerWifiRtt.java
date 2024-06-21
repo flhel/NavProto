@@ -11,18 +11,19 @@ import android.util.Log;
 
 import com.example.navproto.multilateration.Multilateration;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class MyWifiRttManager {
-    private static final String TAG = "MyWifiRttManager";
+public class MyManagerWifiRtt {
+    private static final String TAG = "MyManagerWifiRtt";
     Context context;
     WifiRttManager wifiRttManager;
     Executor mainExecutor;
 
+    boolean forTesting = false;
+
     @SuppressLint("ServiceCast")
-    public MyWifiRttManager(Context context) {
+    public MyManagerWifiRtt(Context context) {
         this.context = context;
         wifiRttManager = (WifiRttManager) context.getSystemService(Context.WIFI_RTT_RANGING_SERVICE);
         mainExecutor = context.getMainExecutor();
@@ -34,10 +35,9 @@ public class MyWifiRttManager {
         //Check if everything is there
         if(wifiRttManager == null){
             // Test Code for Multilateration if Hardware is missing the Wifi RTT Capabilities
-            boolean forTesting = false;
-            if(forTesting){
+            if(true){
                 myLocationListener.onLocationChanged(
-                        new Multilateration().findPositionRTT(new ArrayList<RangingResult>()));
+                        new Multilateration().findPositionRTT(null, 0.05));
             }
             return;
         }
@@ -58,7 +58,8 @@ public class MyWifiRttManager {
             public void onRangingResults(List<RangingResult> results) {
                 Log.d(TAG,"WiFi-Ranging success: " + results);
                 if (myLocationListener != null) {
-                    myLocationListener.onLocationChanged(new Multilateration().findPositionRTT(results));
+                    myLocationListener.onLocationChanged(
+                            new Multilateration().findPositionRTT(results, 0.1));
                 }
             }
         };

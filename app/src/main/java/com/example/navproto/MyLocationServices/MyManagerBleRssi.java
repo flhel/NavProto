@@ -6,7 +6,6 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
-import android.content.Context;
 import android.bluetooth.le.ScanResult;
 import android.util.Log;
 
@@ -17,8 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MyBluetoothAdapter {
-    private static final String TAG = "MyBluetoothAdapter";
+public class MyManagerBleRssi {
+    private static final String TAG = "MyManagerBleRssi";
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothLeScanner;
     private ScanCallback callback ;
@@ -27,8 +26,7 @@ public class MyBluetoothAdapter {
 
     private Map<String, Beacon> beacons;
 
-
-    public MyBluetoothAdapter() {
+    public MyManagerBleRssi() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
             // Please activate Bluetooth
@@ -41,12 +39,17 @@ public class MyBluetoothAdapter {
     @SuppressLint("MissingPermission")
     public void startScanning(MyLocationListener myLocationListener){
 
+        // For Testing
+        if(true){
+            myLocationListener.onLocationChanged(
+                    new Multilateration().findPositionBLE(null, beacons, 1));
+        }
+
         List<ScanFilter> filters = new ArrayList<ScanFilter>();
+        List<Beacon> beaconList = new ArrayList<Beacon>(beacons.values());
 
-        List<Beacon> list = new ArrayList<Beacon>(beacons.values());
-
-        for(Beacon beacon : list){
-            filters.add(new ScanFilter.Builder().setDeviceAddress(beacon.address).build());
+        for(Beacon beacon : beaconList){
+            filters.add(new ScanFilter.Builder().setDeviceAddress(beacon.getAddress()).build());
         }
 
 
@@ -72,15 +75,18 @@ public class MyBluetoothAdapter {
                     // Add ScanResult
                     btScanResults.add(result);
 
-                    Log.d(TAG, "TxPowerLevel: " + myBeacon.measuredRssi + " RSSI" + result.getRssi());
+                    /*
+                    Log.d(TAG, "Measured Power Level: " + myBeacon.measuredRssi + " RSSI" + result.getRssi());
                     double dist = Math.pow(10, (myBeacon.measuredRssi - result.getRssi()) / 20.0);
                     Log.d(TAG, "Distanz: " + dist);
+                    */
                 }
 
                 // Give bundled List to the Multilateration-Algorithm
                 if(btScanResults.size() >= 4) {
                     if (myLocationListener != null) {
-                        myLocationListener.onLocationChanged(new Multilateration().findPositionBLE(btScanResults));
+                        myLocationListener.onLocationChanged(
+                                new Multilateration().findPositionBLE(btScanResults, beacons, 1));
                     }
                     btScanResults = new ArrayList<>();
                 }
@@ -95,7 +101,9 @@ public class MyBluetoothAdapter {
 
     @SuppressLint("MissingPermission")
     public void stopScanning(){
-        bluetoothLeScanner.stopScan(callback);
+        if(bluetoothLeScanner != null){
+            bluetoothLeScanner.stopScan(callback);
+        }
     }
 
     // Add Hardcoded Beacon Locations to the Map
@@ -111,9 +119,9 @@ public class MyBluetoothAdapter {
     //Bluetooth Beacon Class
     public class Beacon {
         private String address;
-        private double lat;
-        private double lng;
-        private double alt;
+        public double lat;
+        public double lng;
+        public double alt;
         private double measuredRssi;
 
         public Beacon(String address, double lat, double lng, double alt, double measuredRssi) {
@@ -122,6 +130,14 @@ public class MyBluetoothAdapter {
             this.lng = lng;
             this.alt = alt;
             this.measuredRssi = measuredRssi;
+        }
+
+        public double getMeasuredRssi() {
+            return measuredRssi;
+        }
+
+        public String getAddress() {
+            return address;
         }
     }
 }

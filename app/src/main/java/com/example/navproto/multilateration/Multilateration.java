@@ -1,95 +1,82 @@
 package com.example.navproto.multilateration;
 
 import static com.example.navproto.multilateration.GeometricCalculations3D.*;
+import static com.example.navproto.multilateration.ConvertKBS.*;
+import static com.example.navproto.multilateration.Helpers.*;
 
 import android.bluetooth.le.ScanResult;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.wifi.rtt.RangingResult;
 import android.util.Log;
 
+import com.example.navproto.MyLocationServices.MyManagerBleRssi;
+
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class Multilateration {
 
     private static final String TAG = "Multilateration";
 
-    private final Point3D coordinatesCenter = new Point3D(50.928280, 6.929074, 0); // eg
+    private final Point3D coordinatesCenter = new Point3D(50.928280, 6.929074, 0);
 
-    // lat, lng, alt
-    private Point3D ap1Location = new Point3D(50.928393, 6.928548, 3); // eg
-    private Point3D ap2Location = new Point3D(50.927977, 6.928806, 3); // eg
-    private Point3D ap3Location = new Point3D(50.928282, 6.929071, 3); // eg
-    private Point3D ap4Location = new Point3D(50.928419, 6.928843, 6); // 1og
+    private double precision;
 
-    // in Millimeters
-    private double ap1DistanceInM = 30.57;
-    private double ap2DistanceInM = 30;
-    private double ap3DistanceInM = 30;
-    private double ap4DistanceInM = 5;
-
-    //Test Code
-    private final Point3D[] accessPointLocations2 = {
-            new Point3D(3, 1, 3),
-            new Point3D(2, 1, 1),
-            new Point3D(3, 2, 1),
-            new Point3D(5, 1, 1)
-    };
-
-    //Test Code
-    private final double[] distances2 = {2, 1, 1, 2};
 
     // Stores all possible combinations of the 4 Spheres
     ArrayList<Sphere[]> allCombinations;
 
-    public Location findPositionBLE(List<ScanResult> results) {
 
-        if(results.size() < 4){
-            Log.d(TAG,"Not enough Reference Points for positioning!");
-            return null;
+    public Location findPositionBLE(List<ScanResult> scanResults, Map<String, MyManagerBleRssi.Beacon> beacons, double precision) {
+
+        // For testing
+        if(scanResults == null){
+            Sphere[] spheres = makeSpheres(testApLocations, testDistances);
+            return findPosition(spheres);
         }
 
-        double[] distances = computeDistances(results);
+        this.precision = precision;
 
-        Log.d(TAG,"Distances: " + distances[0]
-                + " " + distances[1]
-                + " " + distances[2]
-                + " " + distances[3]
-        );
+        LogInsufficientAPs(scanResults.size(), TAG);
 
-        double ap1radius = distances[0];
-        double ap2radius = distances[1];
-        double ap3radius = distances[2];
-        double ap4radius = distances[3];
+        double[] distances = computeDistances(scanResults, beacons);
 
-        Point3D ap1Center = convertToXYZ(ap1Location, coordinatesCenter);
-        Point3D ap2Center = convertToXYZ(ap2Location, coordinatesCenter);
-        Point3D ap3Center = convertToXYZ(ap3Location, coordinatesCenter);
-        Point3D ap4Center = convertToXYZ(ap4Location, coordinatesCenter);
+        List<MyManagerBleRssi.Beacon> beaconList = new ArrayList<MyManagerBleRssi.Beacon>(beacons.values());
 
-        Sphere[] spheres = {
-                new Sphere(ap1Center, ap1radius),
-                new Sphere(ap2Center, ap2radius),
-                new Sphere(ap3Center, ap3radius),
-                new Sphere(ap4Center, ap4radius)
-        };
+        List<Point3D> locations = new ArrayList<>();
+        for(MyManagerBleRssi.Beacon beacon : beaconList){
+            locations.add(convertToXYZ(
+                    new Point3D(beacon.lat, beacon.lng, beacon.alt), coordinatesCenter));
+        }
+
+        Sphere[] spheres = makeSpheres(locations, distances);
 
         return findPosition(spheres);
     }
 
-    // Computes the distance in Meters from txPower (transmission power) and RSSI (Received Signal Strength Indicator)
-    private double[] computeDistances(List<ScanResult> myAps){
-        double[] distances = new double[myAps.size()];
+    // Computes the distance in Meters from the BLE Access Points
+    private double[] computeDistances(List<ScanResult> scanResults, Map<String, MyManagerBleRssi.Beacon> beacons){
+        double[] distances = new double[scanResults.size()];
 
-        for(int i = 0; i < myAps.size(); i++){
-            ScanResult res = myAps.get(i);
-            distances[i] = Math.pow(10, (res.getScanRecord().getTxPowerLevel() - myAps.get(i).getRssi()) / 20.0) / 1000;
+        for(int i = 0; i < scanResults.size(); i++){
+            ScanResult res = scanResults.get(i);
+            MyManagerBleRssi.Beacon beacon = beacons.get(res.getDevice().getAddress());
+
+            distances[i] = Math.pow(10, (beacon.getMeasuredRssi()- res.getRssi()) / 20.0) / 1000;
         }
         return distances;
     }
 
-    public Location findPositionRTT(List<RangingResult> results) {
+    public Location findPositionRTT(List<RangingResult> results, double precision) {
+
+        // For testing
+        if(results == null) {
+            Sphere[] spheres = makeSpheres(testApLocations, testDistances);
+            return findPosition(spheres);
+        }
+
+        this.precision = precision;
 
         List<RangingResult> myAps = new ArrayList<>();
         for(RangingResult res : results){
@@ -98,50 +85,36 @@ public class Multilateration {
             }
         }
 
-        if(myAps.size() < 4){
-            Log.d(TAG,"Not enough Reference Points for positioning!");
-            Log.d(TAG,"Fallback to Hardcoded Points for Testing!");
-        } else {
-            //Set the Locations and Distances for the Algorithm
-            Location loc1 = myAps.get(0).getUnverifiedResponderLocation().toLocation();
-            Location loc2 = myAps.get(1).getUnverifiedResponderLocation().toLocation();
-            Location loc3 = myAps.get(2).getUnverifiedResponderLocation().toLocation();
-            Location loc4 = myAps.get(2).getUnverifiedResponderLocation().toLocation();
-            ap1Location = new Point3D(loc1.getLatitude(), loc1.getLongitude(), loc1.getAltitude());
-            ap2Location = new Point3D(loc2.getLatitude(), loc2.getLongitude(), loc2.getAltitude());
-            ap3Location = new Point3D(loc3.getLatitude(), loc3.getLongitude(), loc3.getAltitude());
-            ap4Location = new Point3D(loc4.getLatitude(), loc4.getLongitude(), loc4.getAltitude());
-            ap1DistanceInM = myAps.get(0).getDistanceMm() / 1000.0;
-            ap2DistanceInM = myAps.get(1).getDistanceMm() / 1000.0;
-            ap3DistanceInM = myAps.get(2).getDistanceMm() / 1000.0;
-            ap4DistanceInM = myAps.get(3).getDistanceMm() / 1000.0;
+        LogInsufficientAPs(myAps.size(), TAG);
+
+        List<Point3D> locations = new ArrayList<>();
+        double[] distances = new double[myAps.size()];
+
+        for(int i = 0; i < myAps.size(); i++){
+            Location loc = myAps.get(i).getUnverifiedResponderLocation().toLocation();
+            Point3D apLocation = new Point3D(loc.getLatitude(), loc.getLongitude(), loc.getAltitude());
+            locations.add(convertToXYZ(apLocation, coordinatesCenter));
+
+            distances[i] = myAps.get(i).getDistanceMm() / 1000.0;
         }
 
-        Point3D ap1Center = convertToXYZ(ap1Location, coordinatesCenter);
-        Point3D ap2Center = convertToXYZ(ap2Location, coordinatesCenter);
-        Point3D ap3Center = convertToXYZ(ap3Location, coordinatesCenter);
-        Point3D ap4Center = convertToXYZ(ap4Location, coordinatesCenter);
-        double ap1radius = ap1DistanceInM;
-        double ap2radius = ap2DistanceInM;
-        double ap3radius = ap3DistanceInM;
-        double ap4radius = ap4DistanceInM;
-
-        Sphere[] spheres = {
-                new Sphere(ap1Center, ap1radius),
-                new Sphere(ap2Center, ap2radius),
-                new Sphere(ap3Center, ap3radius),
-                new Sphere(ap4Center, ap4radius)
-        };
-
-        //For Testing the Multilateration Algorithm
-        if(false){
-            spheres = new Sphere[4];
-            for (int i = 0; i < spheres.length; i++) {
-                spheres[i] = new Sphere(accessPointLocations2[i], distances2[i]);
-            }
-        }
+        Sphere[] spheres = makeSpheres(locations, distances);
 
         return findPosition(spheres);
+    }
+
+    private Sphere[] makeSpheres(List<Point3D> locations, double[] distances){
+        if(locations.size() != distances.length){
+            Log.e(TAG, "Error: Given AP data is invalid");
+            return null;
+        }
+
+        Sphere[] spheres = new Sphere[locations.size()];
+        for(int i = 0; i < locations.size(); i++){
+            spheres[i] = new Sphere(locations.get(i), distances[i]);
+            Log.i(TAG, "Sphere: c = " + spheres[i].center + "  r = " + spheres[i].radius);
+        }
+        return spheres;
     }
 
     private Location findPosition(Sphere[] spheres) {
@@ -151,7 +124,6 @@ public class Multilateration {
             return null;
         }
         Point3D locationP3DConverted = convertToLatLngAlt(locationP3D, coordinatesCenter);
-        System.out.println("locationP3DConverted: " + locationP3DConverted);
         return toLocation(locationP3DConverted);
     }
 
@@ -192,51 +164,11 @@ public class Multilateration {
         }
     }
 
-    private void swap(Sphere[] spheres, int a, int b) {
-        Sphere tmp = spheres[a];
-        spheres[a] = spheres[b];
-        spheres[b] = tmp;
-    }
-
-    /* convert lat/lon/alt (lat in degrees North, lon in degrees East, alt in meters)
-       to a (x,y,z) System in Meters where 0,0,0 is at "coordinatesCenter" (lat,lng,alt)
-       this is done by calculation  the distance in m between two points given in lat lng alt(m)
-    */
-    private Point3D convertToXYZ(Point3D locationP3D, Point3D pCoordCenter) {
-        double dx = (71.5 * 1000)  * (locationP3D.x - pCoordCenter.x);
-        double dy = (111.3 * 1000) * (locationP3D.y - pCoordCenter.y);
-        double dz = locationP3D.z - pCoordCenter.z;
-
-        return new Point3D(dx, dy, dz);
-    }
-
-    // Calculate the locations (lat,lng,alt) from the distance to the  "coordinatesCenter" in meters
-    private Point3D convertToLatLngAlt(Point3D locationP3D, Point3D pCoordCenter) {
-        double dx = pCoordCenter.x + (locationP3D.x / (71.5 * 1000));
-        double dy = pCoordCenter.y + (locationP3D.y / (111.3 * 1000)) ;
-        double dz = pCoordCenter.z + locationP3D.z;
-
-        return new Point3D(dx, dy, dz);
-    }
-
-
-    // Make a Location Object out of the Result
-    public Location toLocation(Point3D point) {
-        Location location = new Location(LocationManager.GPS_PROVIDER);
-        location.setLatitude(point.x);
-        location.setLongitude(point.y);
-        /*
-         The altitude of this location in meters above the WGS84 reference ellipsoid
-         */
-        location.setAltitude(point.z);
-        return location;
-    }
-
     public Point3D calculateLocation(Sphere[] spheres) {
 
         Circle3D circle1 = sphereIntersection(spheres[0],spheres[1]);
         if(circle1 == null){
-            Log.d(TAG, "Spheres don't intersect in a circle" );
+            //Log.e(TAG, "Spheres don't intersect in a circle" );
             return null;
         }
 
@@ -244,21 +176,21 @@ public class Multilateration {
         Circle3D circle2 = planeSphereIntersection(plane, spheres[2]);
 
         if(circle2 == null){
-            Log.d(TAG, "Plane and Sphere don't intersect" );
+            //Log.e(TAG, "Plane and Sphere don't intersect" );
             return null;
         }
 
         ArrayList<Point3D> intersectionPoints = circleIntersection(circle1, circle2);
 
         if(intersectionPoints == null){
-            Log.d(TAG, "Circles don't intersect" );
+            //Log.e(TAG, "Circles don't intersect" );
             return null;
         }
 
         //Log.d(TAG, "Check if Points are on 4th Sphere:" );
         for (Point3D point : intersectionPoints) {
-            if(pointOnSphereCheck(point, spheres[3], 0.05)) {
-                Log.d(TAG, "My Location: " + point.toString());
+            if(pointOnSphereCheck(point, spheres[3], precision)) {
+                Log.i(TAG, "Relative Location: " + point.toString());
                 return point;
             } else {
                 //Log.d(TAG, "No: " + point.toString());
