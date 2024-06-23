@@ -1,5 +1,8 @@
 package com.example.navproto.MyLocationServices;
 
+import static com.example.navproto.fingerprinting.fingerprinting.addTestFingerprints;
+import static com.example.navproto.fingerprinting.fingerprinting.findFingerprint;
+
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
@@ -7,9 +10,12 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
 import android.bluetooth.le.ScanResult;
+import android.location.Location;
+import android.location.LocationManager;
 import android.util.Log;
 
 import com.example.navproto.multilateration.Multilateration;
+import com.example.navproto.fingerprinting.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,13 +40,15 @@ public class MyManagerBleRssi {
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
 
         putMyBeacons();
+
+        addTestFingerprints();
     }
 
     @SuppressLint("MissingPermission")
     public void startScanning(MyLocationListener myLocationListener){
 
         // For Testing
-        if(true){
+        if(false){
             myLocationListener.onLocationChanged(
                     new Multilateration().findPositionBLE(null, beacons, 1));
         }
@@ -55,7 +63,8 @@ public class MyManagerBleRssi {
 
         settings = new ScanSettings.Builder()
                 //.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
-                .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
+                .setScanMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+                .setReportDelay(1500)
                 .build();
 
         callback  = new ScanCallback() {
@@ -72,6 +81,7 @@ public class MyManagerBleRssi {
                             // After this add a fresh ScanResult for a newer measurement
                         }
                     }
+
                     // Add ScanResult
                     btScanResults.add(result);
 
@@ -89,6 +99,37 @@ public class MyManagerBleRssi {
                                 new Multilateration().findPositionBLE(btScanResults, beacons, 1));
                     }
                     btScanResults = new ArrayList<>();
+                }
+            }
+
+            @Override
+            public void onBatchScanResults(List<ScanResult> resultsWithDup) {
+                if(resultsWithDup == null || resultsWithDup.isEmpty()){
+                    return;
+                }
+
+                // Remove duplicates
+                Map<String,ScanResult> map = new HashMap<String,ScanResult>(resultsWithDup.size());
+                for (ScanResult r : resultsWithDup) map.put(r.getDevice().getAddress(), r);
+                List<ScanResult> results = new ArrayList<ScanResult>(map.values());
+
+                // Check Fingerprints
+                Log.d(TAG, "Fingerprint: ");
+                for(ScanResult res : results){
+                    Log.i(TAG, "" + res.getDevice().getAddress() + " " + res.getRssi());
+                }
+
+                Fingerprint fingerprint = findFingerprint(results);
+
+                if(fingerprint != null){
+                    Location location = new Location(LocationManager.GPS_PROVIDER);
+                    location.setLatitude(fingerprint.lat);
+                    location.setLongitude(fingerprint.lng);
+                    location.setAltitude(fingerprint.alt);
+
+                    if (myLocationListener != null) {
+                        myLocationListener.onLocationChanged(location);
+                    }
                 }
             }
         };
@@ -110,34 +151,11 @@ public class MyManagerBleRssi {
     private void putMyBeacons() {
         //TODO put real values here
         beacons = new HashMap<>();
-        beacons.put("88:C6:26:AC:F4:1F", new Beacon("88:C6:26:AC:F4:1F", 50.928393, 6.928548, 3, -48.5));
-        beacons.put("24:15:10:30:1B:FF", new Beacon("24:15:10:30:1B:FF", 50.927977, 6.928806, 3, -55));
-        beacons.put("04:57:91:08:D5:2E", new Beacon("04:57:91:08:D5:2E", 50.928282, 6.929071, 3, -55));
-        beacons.put("A4:08:01:CF:17:1E", new Beacon("A4:08:01:CF:17:1E", 50.928419, 6.928843, 3, -55));
-    }
-
-    //Bluetooth Beacon Class
-    public class Beacon {
-        private String address;
-        public double lat;
-        public double lng;
-        public double alt;
-        private double measuredRssi;
-
-        public Beacon(String address, double lat, double lng, double alt, double measuredRssi) {
-            this.address = address;
-            this.lat = lat;
-            this.lng = lng;
-            this.alt = alt;
-            this.measuredRssi = measuredRssi;
-        }
-
-        public double getMeasuredRssi() {
-            return measuredRssi;
-        }
-
-        public String getAddress() {
-            return address;
-        }
+       // beacons.put("88:C6:26:AC:F4:1F", new Beacon("88:C6:26:AC:F4:1F", 0, 0, 0, -48.5));
+        beacons.put("CC:B1:1A:E1:17:D5", new Beacon("CC:B1:1A:E1:17:D5", 0, 0, 0, 0));
+        beacons.put("70:09:71:C7:F8:31", new Beacon("70:09:71:C7:F8:31", 0, 0, 0, 0));
+        beacons.put("F8:B9:5A:C7:76:9B", new Beacon("F8:B9:5A:C7:76:9B", 0, 0, 0, 0));
+        beacons.put("4B:6A:14:DB:91:86", new Beacon("4B:6A:14:DB:91:86", 0, 0, 0, 0));
+        beacons.put("1C:AF:4A:20:D2:55", new Beacon("1C:AF:4A:20:D2:55", 0, 0, 0, 0));
     }
 }

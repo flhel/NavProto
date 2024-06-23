@@ -3,7 +3,9 @@ package com.example.navproto.multilateration;
 import static com.example.navproto.multilateration.GeometricCalculations3D.*;
 import static com.example.navproto.multilateration.ConvertKBS.*;
 import static com.example.navproto.multilateration.Helpers.*;
+import com.example.navproto.fingerprinting.Beacon;
 
+import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.location.Location;
 import android.net.wifi.rtt.RangingResult;
@@ -28,7 +30,7 @@ public class Multilateration {
     ArrayList<Sphere[]> allCombinations;
 
 
-    public Location findPositionBLE(List<ScanResult> scanResults, Map<String, MyManagerBleRssi.Beacon> beacons, double precision) {
+    public Location findPositionBLE(List<ScanResult> scanResults, Map<String, Beacon> beacons, double precision) {
 
         // For testing
         if(scanResults == null){
@@ -42,10 +44,10 @@ public class Multilateration {
 
         double[] distances = computeDistances(scanResults, beacons);
 
-        List<MyManagerBleRssi.Beacon> beaconList = new ArrayList<MyManagerBleRssi.Beacon>(beacons.values());
+        List<Beacon> beaconList = new ArrayList<Beacon>(beacons.values());
 
         List<Point3D> locations = new ArrayList<>();
-        for(MyManagerBleRssi.Beacon beacon : beaconList){
+        for(Beacon beacon : beaconList){
             locations.add(convertToXYZ(
                     new Point3D(beacon.lat, beacon.lng, beacon.alt), coordinatesCenter));
         }
@@ -56,12 +58,19 @@ public class Multilateration {
     }
 
     // Computes the distance in Meters from the BLE Access Points
-    private double[] computeDistances(List<ScanResult> scanResults, Map<String, MyManagerBleRssi.Beacon> beacons){
+    private double[] computeDistances(List<ScanResult> scanResults, Map<String, Beacon> beacons){
         double[] distances = new double[scanResults.size()];
 
         for(int i = 0; i < scanResults.size(); i++){
             ScanResult res = scanResults.get(i);
-            MyManagerBleRssi.Beacon beacon = beacons.get(res.getDevice().getAddress());
+            Beacon beacon = beacons.get(res.getDevice().getAddress());
+
+            // beacon.getMeasuredRssi() can be replaced by getTxPower or getTxPowerLevel depending on the devices used
+            /*
+            res.getTxPower()
+            ScanRecord scanRecord = res.getScanRecord();
+            scanRecord.getTxPowerLevel();
+            */
 
             distances[i] = Math.pow(10, (beacon.getMeasuredRssi()- res.getRssi()) / 20.0) / 1000;
         }
