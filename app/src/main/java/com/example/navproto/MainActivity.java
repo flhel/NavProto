@@ -13,6 +13,8 @@ import android.widget.ArrayAdapter;
 
 import com.example.navproto.databinding.ActivityMainBinding;
 
+import com.example.navproto.sensors.*;
+
 import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;

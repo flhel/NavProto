@@ -1,7 +1,8 @@
-package com.example.navproto.fingerprinting;
+package com.example.navproto.positioning.fingerprinting;
+
+import com.example.navproto.positioning.Beacon;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class Fingerprint {
     public double lat;

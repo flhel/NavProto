@@ -1,8 +1,5 @@
-package com.example.navproto.multilateration;
+package com.example.navproto.positioning.multilateration;
 
-import android.icu.math.BigDecimal;
-
-import java.math.RoundingMode;
 import java.util.ArrayList;
 
 public class GeometricCalculations3D {

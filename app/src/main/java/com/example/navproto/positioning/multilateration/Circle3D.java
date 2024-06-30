@@ -1,4 +1,4 @@
-package com.example.navproto.multilateration;
+package com.example.navproto.positioning.multilateration;
 
 public class Circle3D extends Plane{
     double radius;

@@ -1,4 +1,4 @@
-package com.example.navproto.fingerprinting;
+package com.example.navproto.positioning;
 
 //Bluetooth Beacon Class
 public class Beacon {

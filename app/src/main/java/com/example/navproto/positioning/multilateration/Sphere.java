@@ -1,4 +1,4 @@
-package com.example.navproto.multilateration;
+package com.example.navproto.positioning.multilateration;
 
 public class Sphere {
     Point3D center;

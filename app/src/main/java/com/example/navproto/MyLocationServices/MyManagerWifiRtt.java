@@ -9,7 +9,7 @@ import android.net.wifi.rtt.RangingResultCallback;
 import android.net.wifi.rtt.WifiRttManager;
 import android.util.Log;
 
-import com.example.navproto.multilateration.Multilateration;
+import com.example.navproto.positioning.multilateration.Multilateration;
 
 import java.util.List;
 import java.util.concurrent.Executor;

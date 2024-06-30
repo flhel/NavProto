@@ -1,17 +1,14 @@
-package com.example.navproto.multilateration;
+package com.example.navproto.positioning.multilateration;
 
-import static com.example.navproto.multilateration.GeometricCalculations3D.*;
-import static com.example.navproto.multilateration.ConvertKBS.*;
-import static com.example.navproto.multilateration.Helpers.*;
-import com.example.navproto.fingerprinting.Beacon;
+import static com.example.navproto.positioning.multilateration.GeometricCalculations3D.*;
+import static com.example.navproto.positioning.multilateration.ConvertKBS.*;
+import static com.example.navproto.positioning.multilateration.Helpers.*;
+import com.example.navproto.positioning.Beacon;
 
-import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.location.Location;
 import android.net.wifi.rtt.RangingResult;
 import android.util.Log;
-
-import com.example.navproto.MyLocationServices.MyManagerBleRssi;
 
 import java.util.List;
 import java.util.ArrayList;

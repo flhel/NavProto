@@ -1,7 +1,7 @@
 package com.example.navproto.MyLocationServices;
 
-import static com.example.navproto.fingerprinting.fingerprinting.addTestFingerprints;
-import static com.example.navproto.fingerprinting.fingerprinting.findFingerprint;
+import static com.example.navproto.positioning.fingerprinting.Fingerprinting.addTestFingerprints;
+import static com.example.navproto.positioning.fingerprinting.Fingerprinting.findFingerprint;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -14,8 +14,9 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
 
-import com.example.navproto.multilateration.Multilateration;
-import com.example.navproto.fingerprinting.*;
+import com.example.navproto.positioning.Beacon;
+import com.example.navproto.positioning.fingerprinting.Fingerprint;
+import com.example.navproto.positioning.multilateration.Multilateration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,7 +65,7 @@ public class MyManagerBleRssi {
         settings = new ScanSettings.Builder()
                 //.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
                 .setScanMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
-                .setReportDelay(1500)
+                .setReportDelay(2000)
                 .build();
 
         callback  = new ScanCallback() {
@@ -154,8 +155,8 @@ public class MyManagerBleRssi {
        // beacons.put("88:C6:26:AC:F4:1F", new Beacon("88:C6:26:AC:F4:1F", 0, 0, 0, -48.5));
         beacons.put("CC:B1:1A:E1:17:D5", new Beacon("CC:B1:1A:E1:17:D5", 0, 0, 0, 0));
         beacons.put("70:09:71:C7:F8:31", new Beacon("70:09:71:C7:F8:31", 0, 0, 0, 0));
-        beacons.put("F8:B9:5A:C7:76:9B", new Beacon("F8:B9:5A:C7:76:9B", 0, 0, 0, 0));
-        beacons.put("4B:6A:14:DB:91:86", new Beacon("4B:6A:14:DB:91:86", 0, 0, 0, 0));
+        beacons.put("88:C6:26:AC:F4:1F", new Beacon("88:C6:26:AC:F4:1F", 0, 0, 0, 0));
+        //beacons.put("4B:6A:14:DB:91:86", new Beacon("4B:6A:14:DB:91:86", 0, 0, 0, 0));
         beacons.put("1C:AF:4A:20:D2:55", new Beacon("1C:AF:4A:20:D2:55", 0, 0, 0, 0));
     }
 }

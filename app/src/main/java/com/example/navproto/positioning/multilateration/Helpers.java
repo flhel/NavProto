@@ -1,7 +1,7 @@
-package com.example.navproto.multilateration;
+package com.example.navproto.positioning.multilateration;
 
-import static com.example.navproto.multilateration.ConvertKBS.convertToXYZ;
-
+import android.location.Location;
+import android.location.LocationManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -31,5 +31,17 @@ public class Helpers {
         Sphere tmp = spheres[a];
         spheres[a] = spheres[b];
         spheres[b] = tmp;
+    }
+
+    // Make a Location Object out of the Result
+    public static Location toLocation(Point3D point) {
+        Location location = new Location(LocationManager.GPS_PROVIDER);
+        location.setLatitude(point.x);
+        location.setLongitude(point.y);
+        /*
+         The altitude of this location in meters above the WGS84 reference ellipsoid
+         */
+        location.setAltitude(point.z);
+        return location;
     }
 }
